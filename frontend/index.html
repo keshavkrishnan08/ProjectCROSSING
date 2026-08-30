@@ -44,11 +44,11 @@
   /* legend */
   .legend{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:26px;font-size:13px;color:var(--ink-3)}
   .legend .bar{width:110px;height:8px;border-radius:6px;background:linear-gradient(90deg,var(--safe),var(--mid),var(--danger))}
-  /* gallery */
-  .gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-  .gcard{position:relative;border-radius:14px;overflow:hidden;box-shadow:var(--shadow);background:#000}
-  .gcard img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
-  .gcard .rb{position:absolute;top:9px;left:9px;font-size:12px;font-weight:600;color:#fff;padding:4px 10px;border-radius:980px;font-variant-numeric:tabular-nums}
+  /* explanation */
+  .explain{max-width:720px;margin:2px auto 0;display:flex;flex-direction:column;gap:26px}
+  .ex h4{margin:0 0 7px;font-size:12px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em}
+  .ex p{margin:0;font-size:16.5px;line-height:1.6;color:var(--ink);text-wrap:pretty}
+  .ex.lead p{font-size:21px;line-height:1.5;font-weight:500;letter-spacing:-.01em}
   /* charts */
   .charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   .chart{background:var(--surface);border-radius:16px;padding:18px 20px 12px;box-shadow:var(--shadow)}
@@ -60,45 +60,7 @@
   .cap-row .top b{font-variant-numeric:tabular-nums}
   .cap-row .track{height:9px;border-radius:6px;background:var(--grid);overflow:hidden}
   .cap-row .track>i{display:block;height:100%;border-radius:6px;background:var(--safe)}
-  /* fleet */
-  .gov{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
-  .gstat{background:var(--surface);border-radius:14px;padding:15px 17px;box-shadow:var(--shadow)}
-  .gstat .k{font-size:12px;color:var(--ink-3);margin-bottom:6px}
-  .gstat .v{font-size:24px;font-weight:600;font-variant-numeric:tabular-nums}
-  .gstat .v small{font-size:13px;color:var(--ink-3);font-weight:500}
-  .fleet{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-  .fcard{position:relative;background:var(--surface);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
-  .fcard img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
-  .fcard .rb{position:absolute;top:9px;left:9px;font-size:12px;font-weight:600;color:#fff;padding:4px 10px;border-radius:980px;font-variant-numeric:tabular-nums}
-  .fcard .meta{padding:11px 13px 13px}
-  .fcard .nm{font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:7px}
-  .fcard .nm .live{width:8px;height:8px;border-radius:50%;background:var(--safe);box-shadow:0 0 0 3px rgba(52,199,89,.16)}
-  .fcard .lo{font-size:11.5px;color:var(--ink-3);margin-top:4px;font-variant-numeric:tabular-nums}
-  /* trace */
-  .tracehead{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-  .th-title{font-size:17px;font-weight:600}
-  .chip{font-size:12px;font-weight:500;color:var(--ink-2);background:#e8e8ea;border-radius:980px;padding:5px 12px;font-variant-numeric:tabular-nums}
-  .picker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
-  .pk{border:none;font-family:inherit;font-size:13px;font-weight:500;color:var(--ink-2);background:var(--surface);
-    box-shadow:var(--shadow);padding:8px 14px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px}
-  .pk.on{color:var(--ink);box-shadow:0 0 0 2px var(--ink) inset}
-  .pk .d{width:8px;height:8px;border-radius:50%}
-  .flow{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch}
-  .node{background:var(--surface);border-radius:14px;box-shadow:var(--shadow);padding:14px 16px;flex:1;min-width:150px;position:relative}
-  .node.arrow::after{content:"";position:absolute;right:-13px;top:50%;width:14px;height:2px;background:var(--line);z-index:1}
-  .node .stg{font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px}
-  .node .big{font-size:16px;font-weight:600}
-  .node .row{font-size:12.5px;color:var(--ink-2);margin-top:5px;display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
-  .node .row b{color:var(--ink);font-weight:600}
-  .node.risk{background:var(--ink)}
-  .node.risk .stg{color:rgba(255,255,255,.6)}
-  .node.risk .big{color:#fff;font-size:30px;font-variant-numeric:tabular-nums}
-  /* monitor legends */
-  .mlgd{display:flex;gap:16px;justify-content:center;font-size:12px;color:var(--ink-3);margin-top:8px}
-  .mlgd span{display:flex;align-items:center;gap:6px}
-  .mlgd i{width:10px;height:10px;border-radius:3px;display:inline-block}
-  @media (max-width:900px){.gallery,.fleet{grid-template-columns:repeat(2,1fr)}.gov{grid-template-columns:repeat(2,1fr)}}
-  @media (max-width:820px){.videos,.charts{grid-template-columns:1fr}.topbar{flex-direction:column;gap:14px}.flow{flex-direction:column}.node.arrow::after{display:none}}
+  @media (max-width:820px){.videos,.charts{grid-template-columns:1fr}.topbar{flex-direction:column;gap:14px}}
 </style>
 </head>
 <body>
@@ -114,10 +76,7 @@
     </div>
     <div class="tabs" role="tablist">
       <button class="tab on" data-tab="live" role="tab">Live</button>
-      <button class="tab" data-tab="situations" role="tab">Situations</button>
-      <button class="tab" data-tab="fleet" role="tab">Fleet</button>
-      <button class="tab" data-tab="trace" role="tab">Trace</button>
-      <button class="tab" data-tab="monitor" role="tab">Monitor</button>
+      <button class="tab" data-tab="explanation" role="tab">Explanation</button>
       <button class="tab" data-tab="results" role="tab">Results</button>
     </div>
   </div>
@@ -127,28 +86,40 @@
     <div class="legend"><span>Safe</span><span class="bar"></span><span>Danger</span></div>
   </section>
 
-  <section class="panel" id="situations">
-    <div class="gallery" id="gallery"></div>
-  </section>
-
-  <section class="panel" id="fleet">
-    <div class="gov" id="gov"></div>
-    <div class="fleet" id="fleetgrid"></div>
-  </section>
-
-  <section class="panel" id="trace">
-    <div class="tracehead">
-      <div class="th-title">Every score traces back to what produced it</div>
-      <span class="chip" id="mv">model</span>
-    </div>
-    <div class="picker" id="tracepick"></div>
-    <div class="flow" id="flow"></div>
-  </section>
-
-  <section class="panel" id="monitor">
-    <div class="charts">
-      <div class="chart"><h3>Calibration on labeled test</h3><div id="mon_reliab"></div></div>
-      <div class="chart"><h3>Live input drift by feed</h3><div id="mon_drift"></div></div>
+  <section class="panel" id="explanation">
+    <div class="explain">
+      <div class="ex lead">
+        <p>This turns street video into a live read on pedestrian safety. It is not just a box
+        around each object. It follows every person and every vehicle and works out who is in
+        danger.</p>
+      </div>
+      <div class="ex">
+        <h4>The goal</h4>
+        <p>For each person we estimate the chance of being hit. Green means safe. Red means
+        danger. The number is the model output and not a guess.</p>
+      </div>
+      <div class="ex">
+        <h4>How it reads the scene</h4>
+        <p>A detector finds people and vehicles in every frame. A tracker gives each one a
+        stable identity and measures speed and heading. From the size of each box the model
+        recovers real world depth.</p>
+      </div>
+      <div class="ex">
+        <h4>Why depth matters</h4>
+        <p>A car can look close on screen and still be far away. The camera angle fools the
+        eye. The model corrects for this so a distant car does not raise a false alarm.</p>
+      </div>
+      <div class="ex">
+        <h4>When risk goes up</h4>
+        <p>Risk climbs only when a moving vehicle is aimed at a person and closing in and
+        near. An orderly crossing where the cars wait stays green. A car bearing down on
+        someone in its path turns red.</p>
+      </div>
+      <div class="ex">
+        <h4>Trust the number</h4>
+        <p>The score is calibrated against labeled outcomes. A value near eighty really does
+        mean that about eighty in a hundred such moments become a near miss.</p>
+      </div>
     </div>
   </section>
 
@@ -220,84 +191,6 @@ function attach(id){const V=document.getElementById('v'+id);let data=null,sp=nul
     requestAnimationFrame(tick);}
   requestAnimationFrame(tick);}
 IDS.forEach(attach);
-
-const galleryP=fetch('/media/gallery.json').then(r=>r.json());
-galleryP.then(shots=>{
-  document.getElementById('gallery').innerHTML=shots.map(s=>
-    `<div class="gcard"><span class="rb" style="background:${riskColor(s.risk/100)}">${s.risk}%</span><img src="${s.img}" alt="${s.scene}" loading="lazy"/></div>`).join('');
-}).catch(()=>{});
-
-/* ---- Fleet: many camera feeds, health, alerts, privacy ---- */
-function renderFleet(fl,shots){
-  const img={};(shots||[]).forEach(s=>img[s.scene]=s.img);
-  const g=[['Cameras online',`${fl.online} <small>/ ${fl.cameras}</small>`],
-    ['Alerts today',fl.alerts_today],['Pedestrians at risk',fl.at_risk_now],
-    ['Fleet uptime',(fl.fleet_uptime*100).toFixed(1)+'%'],
-    ['Privacy',`<span style="font-size:14px;font-weight:600">Faces and plates redacted</span>`]];
-  document.getElementById('gov').innerHTML=g.map(([k,v])=>
-    `<div class="gstat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
-  document.getElementById('fleetgrid').innerHTML=fl.feeds.map(f=>{
-    const src=img[f.name]||'';const dot=f.status==='online'?'var(--safe)':f.status==='degraded'?'var(--mid)':'var(--danger)';
-    return `<div class="fcard">
-      <span class="rb" style="background:${riskColor(f.peak_risk/100)}">${f.peak_risk}%</span>
-      ${src?`<img src="${src}" alt="${f.name}" loading="lazy"/>`:''}
-      <div class="meta"><div class="nm"><span class="live" style="background:${dot};box-shadow:0 0 0 3px ${dot}28"></span>${f.feed_id}</div>
-      <div class="lo">${f.name}</div><div class="lo">${f.lat.toFixed(3)} / ${f.lon.toFixed(3)}</div></div></div>`;}).join('');
-}
-Promise.all([fetch('/media/fleet.json').then(r=>r.json()).catch(()=>null),galleryP.catch(()=>[])])
-  .then(([fl,shots])=>{if(fl)renderFleet(fl,shots);else document.querySelector('[data-tab=fleet]').style.display='none';});
-
-/* ---- Trace: provenance chain behind one risk score ---- */
-function node(stage,big,rows,cls,arrow){
-  const r=(rows||[]).map(([k,v])=>`<div class="row"><span>${k}</span><b>${v}</b></div>`).join('');
-  return `<div class="node ${cls||''} ${arrow?'arrow':''}"><div class="stg">${stage}</div><div class="big">${big}</div>${r}</div>`;
-}
-function renderFlow(rec){
-  const p=rec.pedestrian,d=rec.driver,c=rec.components,pct=rec.risk_pct;
-  const flow=[
-    node('Detection · YOLOv3',d?`${p.cls} and ${d.cls}`:p.cls,
-      [['person confidence',p.det_conf_mean],...(d?[[d.cls+' confidence',d.det_conf_mean]]:[])],'',true),
-    node('Tracking · ByteTrack',d?`#${p.track_id} and #${d.track_id}`:`#${p.track_id}`,
-      [['frames seen',p.frames_seen],['since frame',p.first_frame]],'',true),
-    node('Interaction · depth aware',`${c.d_real} m`,
-      [['path alignment',c.align],['closing speed',c.closing_ms+' m/s']],'',true),
-    node('Risk components','',
-      [['proximity',c.prox],['in the path',c.path],['time to hit',c.ttc_boost]],'',true),
-    node('Probability of being hit',pct+'%',[],'risk',false)];
-  document.getElementById('flow').innerHTML=flow.join('');
-}
-function renderTrace(lin){
-  const recs=lin.records||[];document.getElementById('mv').textContent=lin.model_version;
-  if(!recs.length){document.querySelector('[data-tab=trace]').style.display='none';return;}
-  const pk=document.getElementById('tracepick');
-  pk.innerHTML=recs.map((r,i)=>`<button class="pk${i===0?' on':''}" data-i="${i}"><span class="d" style="background:${riskColor(r.risk)}"></span>${r.scene} · ${r.risk_pct}%</button>`).join('');
-  pk.querySelectorAll('.pk').forEach(b=>b.onclick=()=>{pk.querySelectorAll('.pk').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderFlow(recs[+b.dataset.i]);});
-  renderFlow(recs[0]);
-}
-fetch('/media/lineage.json').then(r=>r.json()).then(renderTrace).catch(()=>{document.querySelector('[data-tab=trace]').style.display='none';});
-
-/* ---- Monitor: calibration + live input drift ---- */
-const BAND={stable:SAFE,moderate:'#ffcc00',drift:DANGER};
-function ksBand(k){return k<0.1?'stable':k<0.3?'moderate':'drift';}
-function driftBars(feeds){
-  feeds=feeds.slice().sort((a,b)=>b.ks-a.ks);
-  const W=560,rowH=34,H=feeds.length*rowH+30,L=158,R=50,svg=E('svg',{viewBox:`0 0 ${W} ${H}`});
-  const px=v=>L+(W-L-R)*Math.min(1,v);            // KS is bounded 0..1
-  [0,0.5,1].forEach(t=>{svg.appendChild(E('line',{x1:px(t),y1:6,x2:px(t),y2:H-22,stroke:GRID,'stroke-width':1}));
-    svg.appendChild(TX(px(t),H-8,t.toFixed(1),{fill:INK3,'font-size':10.5,'text-anchor':'middle'}));});
-  feeds.forEach((f,i)=>{const cy=16+rowH*i,b=ksBand(f.ks);
-    svg.appendChild(TX(L-10,cy+13,f.feed,{fill:INK2,'font-size':12,'text-anchor':'end'}));
-    svg.appendChild(E('rect',{x:L,y:cy+4,width:Math.max(2,px(f.ks)-L),height:16,rx:4,fill:BAND[b]||SLATE}));
-    svg.appendChild(TX(px(f.ks)+8,cy+16,f.ks.toFixed(2),{fill:INK2,'font-size':11.5,'font-weight':600}));});
-  document.getElementById('mon_drift').appendChild(svg);
-  const lg=document.createElement('div');lg.className='mlgd';
-  lg.innerHTML=Object.entries(BAND).map(([k,v])=>`<span><i style="background:${v}"></i>${k}</span>`).join('');
-  document.getElementById('mon_drift').appendChild(lg);
-}
-fetch('/media/monitoring.json').then(r=>r.json()).then(m=>{
-  if(m.calibration&&m.calibration.calibrated)reliability(m.calibration,'mon_reliab');
-  if(m.drift&&m.drift.feeds)driftBars(m.drift.feeds);
-}).catch(()=>{document.querySelector('[data-tab=monitor]').style.display='none';});
 
 function lolli(cid,table,metric,xmin,xmax,fmt){
   const order=['distance','ttc','ttc+motion','physics','learned'];
