@@ -10,9 +10,15 @@ from pathlib import Path
 import cv2
 
 from scripts.safety_video import process
+from crossing.streaming import build_fleet
+from crossing.monitoring import temporal_drift_report
+from crossing.privacy import REDACTION_POLICY
+from crossing.provenance import MODEL_VERSION
 
-ASSETS = Path(__file__).resolve().parent.parent / "assets"
-MEDIA = Path(__file__).resolve().parent.parent / "frontend" / "media"
+ROOT = Path(__file__).resolve().parent.parent
+ASSETS = ROOT / "assets"
+MEDIA = ROOT / "frontend" / "media"
+FRONTEND = ROOT / "frontend"
 MEDIA.mkdir(parents=True, exist_ok=True)
 
 # (asset, start, count, scene, environment description [no commas]) ordered; first 4 = Live videos
@@ -34,7 +40,7 @@ def peak_frame(meta):
 
 
 def main():
-    gallery = []
+    gallery, fleet_scenes, lineage_records, risk_streams = [], [], [], {}
     for i, (asset, start, count, scene, env) in enumerate(ENVS, start=1):
         src = ASSETS / asset
         if not src.exists():
@@ -42,12 +48,19 @@ def main():
         mp4 = ASSETS / f"env{i}.mp4"
         print(f"[{i}] {scene}: processing {count} frames of {asset}...", flush=True)
         meta = process(str(src), start, count, out_w=960, out_mp4=str(mp4), json_out=None)
-        # Live videos: first four -> served as safety1..4 with per-frame counts
+        risk_series = [round(f["max_risk"], 3) for f in meta["frames"]]
+        risk_streams[scene] = risk_series
+        peak_pct = round(max(risk_series, default=0.0) * 100)
+        at_risk_now = max((f["at_risk"] for f in meta["frames"]), default=0)
+        # Live videos: first four -> served as safety1..4 with per-frame counts + lineage
         if i <= 4:
             shutil.copy(mp4, MEDIA / f"safety{i}.mp4")
             counts = [[f["n_ped"], f["at_risk"], round(f["max_risk"] * 100)] for f in meta["frames"]]
-            json.dump({"fps": meta["fps"], "frames": counts},
+            json.dump({"fps": meta["fps"], "frames": counts, "lineage": meta.get("lineage")},
                       open(MEDIA / f"safety{i}_counts.json", "w"))
+            if meta.get("lineage"):
+                lineage_records.append({"scene": scene, "env": env, "video": f"/media/safety{i}.mp4",
+                                        **meta["lineage"]})
         # one gallery still from this environment: its peak-risk frame
         pk, fr = peak_frame(meta)
         cap = cv2.VideoCapture(str(mp4)); cap.set(cv2.CAP_PROP_POS_FRAMES, pk); ok, frame = cap.read()
@@ -57,9 +70,27 @@ def main():
                         [cv2.IMWRITE_JPEG_QUALITY, 84])
             gallery.append({"img": f"/media/env{i}.jpg", "scene": scene, "env": env,
                             "risk": round(fr[pk]["max_risk"] * 100), "ped": fr[pk]["n_ped"]})
-        print(f"    peak risk {round(fr[pk]['max_risk']*100)}%  ({fr[pk]['n_ped']} people)", flush=True)
+        fleet_scenes.append({"name": scene, "peak_risk": peak_pct, "at_risk": at_risk_now,
+                             "alerts": 1 if peak_pct >= 78 else 0})
+        print(f"    peak risk {peak_pct}%  ({fr[pk]['n_ped']} people)", flush=True)
     json.dump(gallery, open(MEDIA / "gallery.json", "w"))
-    print("gallery entries:", len(gallery))
+
+    # ---- governance artifacts (fleet scale, provenance, live monitoring) ----
+    fleet = build_fleet(fleet_scenes)
+    fs = fleet.status()
+    fs["redaction"] = REDACTION_POLICY.summary()
+    fs["model_version"] = MODEL_VERSION
+    json.dump(fs, open(MEDIA / "fleet.json", "w"))
+
+    json.dump({"model_version": MODEL_VERSION, "records": lineage_records},
+              open(MEDIA / "lineage.json", "w"))
+
+    drift = temporal_drift_report(risk_streams, bins=10)   # per-feed shift over time
+    reliab = json.load(open(ROOT / "artifacts" / "metrics" / "risk.json")).get("reliability", {})
+    json.dump({"model_version": MODEL_VERSION, "drift": drift, "calibration": reliab},
+              open(MEDIA / "monitoring.json", "w"))
+    print("gallery entries:", len(gallery), "| fleet cameras:", fs["cameras"],
+          "| lineage:", len(lineage_records), "| drift feeds:", len(drift["feeds"]))
 
 
 if __name__ == "__main__":
