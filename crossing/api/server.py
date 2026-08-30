@@ -12,13 +12,14 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from ..config import RECORDINGS_DIR, ROOT
 from ..data.datamodel import EventDatabase
+from ..security import AUDIT, SCOPES, resolve_principal
 
 app = FastAPI(title="CROSSING", description="Pedestrian-vehicle safety intelligence")
 
@@ -121,3 +122,60 @@ def metrics():
         if p.exists():
             out[name] = json.loads(p.read_text())
     return out
+
+
+# --------------------------------------------------------------------------------------
+# Governance: role-based access control + audit over the sensitive operational surfaces.
+# A request carries an ``X-API-Key`` header that resolves to a principal (role -> scopes).
+# Every governed read is written to the audit log, whether it was allowed or denied.
+# --------------------------------------------------------------------------------------
+def _principal(x_api_key: str | None = Header(default=None)):
+    return resolve_principal(x_api_key)
+
+
+def require(scope: str, resource: str):
+    def dep(request: Request, principal=Depends(_principal)):
+        allowed = principal.can(scope)
+        AUDIT.record(principal.subject, principal.role, "read", resource,
+                     allowed=allowed, path=request.url.path, scope=scope)
+        if not allowed:
+            raise HTTPException(403, f"role '{principal.role}' lacks scope '{scope}'")
+        return principal
+    return dep
+
+
+def _media_json(name: str):
+    p = _MEDIA / name
+    if not p.exists():
+        raise HTTPException(404, f"{name} not built yet — run `python -m scripts.build_gallery`")
+    return JSONResponse(json.loads(p.read_text()))
+
+
+@app.get("/api/whoami")
+def whoami(x_api_key: str | None = Header(default=None)):
+    """Resolve the caller's role and the scopes it grants (viewer if no/unknown key)."""
+    return {"principal": resolve_principal(x_api_key).as_dict(), "scopes": SCOPES}
+
+
+@app.get("/api/fleet")
+def fleet(principal=Depends(require("feed:view", "fleet"))):
+    """Fleet-wide camera status: scale, alerts, uptime, redaction policy."""
+    return _media_json("fleet.json")
+
+
+@app.get("/api/lineage")
+def lineage(principal=Depends(require("lineage:read", "lineage"))):
+    """Provenance chains behind flagged risk scores. Privileged (analyst+)."""
+    return _media_json("lineage.json")
+
+
+@app.get("/api/monitoring")
+def monitoring(principal=Depends(require("monitor:read", "monitoring"))):
+    """Live input-distribution drift + model calibration."""
+    return _media_json("monitoring.json")
+
+
+@app.get("/api/audit")
+def audit(principal=Depends(require("audit:read", "audit"))):
+    """The access audit log itself. Admin only."""
+    return {"summary": AUDIT.summary(), "recent": AUDIT.tail(50)}
