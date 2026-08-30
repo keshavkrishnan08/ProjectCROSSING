@@ -56,6 +56,32 @@ Every number is produced by `python -m scripts.train_all` and written to
 
 ---
 
+## Governance (production posture)
+
+A safety model that watches public streets has to be operable and accountable, not just
+accurate. Four layers make it deployable:
+
+* **Provenance** (`crossing/provenance/`) — every risk score is content‑addressed to the
+  model that made it and carries its full lineage: which detections, over how many frames,
+  at what confidence, tracked into which actor, closing with which vehicle, through which
+  metric components. The **Trace** tab renders that chain. "Where did this 97 come from?"
+  always has an answer.
+* **Privacy** (`crossing/privacy/`) — faces and licence plates are mosaic‑redacted *inside*
+  the pipeline, before any frame is written or served, so raw imagery never leaves the
+  processing step. The de‑identified frames are what the demo actually plays.
+* **Access control + audit** (`crossing/security/`) — the API is role‑gated (`viewer` /
+  `operator` / `analyst` / `admin`); the raw feed, the lineage, and the audit log each need
+  a higher scope, and every governed read is written to an append‑only audit log.
+* **Scale + monitoring** (`crossing/streaming/`, `crossing/monitoring/`) — a fleet registry
+  models many camera feeds with health and backpressure (the **Fleet** tab), and drift
+  (population‑stability + KS) plus calibration tracking watch whether the live input is still
+  the distribution the model was built for (the **Monitor** tab).
+
+Governed endpoints: `/api/fleet`, `/api/lineage`, `/api/monitoring`, `/api/audit`,
+`/api/whoami`. Try them with `X-API-Key: crossing-analyst-key`.
+
+---
+
 ## The interactive demo
 
 A single self‑contained page (`frontend/index.html`) plays the whole story as a cinematic,
@@ -154,6 +180,11 @@ crossing/
   risk/                risk engine · near‑miss detection · explanation · counterfactuals
   ml/                  numpy NN (GRU+Adam) · datasets · baselines · training · evaluation · calibration
   graph/               event graph · city analyzer
+  provenance/          content‑addressed model version · risk lineage records
+  privacy/             in‑pipeline face + plate redaction
+  security/            role‑based access control · append‑only audit log
+  streaming/           camera‑fleet registry · bounded ingestion queue
+  monitoring/          PSI/KS drift · calibration tracking
   pipeline.py          end‑to‑end orchestrator
   api/                 FastAPI dashboard + JSON API
 frontend/index.html    self‑contained cinematic dashboard
