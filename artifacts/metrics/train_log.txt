@@ -1,0 +1,56 @@
+== CROSSING training ==  train=[1, 2, 3, 4, 5, 6, 7, 8] val=[101, 102, 103] test=[201, 202, 203, 204] dur=30.0s
+
+--- Risk model + baseline ladder ---
+[risk] building datasets...
+  scene seed=1: cumulative samples=28343
+  scene seed=2: cumulative samples=47659
+  scene seed=3: cumulative samples=81611
+  scene seed=4: cumulative samples=119761
+  scene seed=5: cumulative samples=156708
+  scene seed=6: cumulative samples=178135
+  scene seed=7: cumulative samples=199780
+  scene seed=8: cumulative samples=241662
+[risk] train 241662 (pos 2018) | val 75800 | test 103468 (pos 958)
+[risk] saved model -> /Users/keshavkrishnan/ProjectPedestrian/artifacts/models/risk_model.pkl
+
+--- Crossing-intention GRU ---
+[intent] building datasets...
+  scene seed=1: cumulative samples=2071
+  scene seed=2: cumulative samples=3503
+  scene seed=3: cumulative samples=5184
+  scene seed=4: cumulative samples=7543
+  scene seed=5: cumulative samples=9652
+  scene seed=6: cumulative samples=10961
+  scene seed=7: cumulative samples=12665
+  scene seed=8: cumulative samples=14875
+[intent] train 14875 (pos 6961) | val 4327 | test 6327 (pos 2690)
+  epoch   0 loss=0.3493 val_auc=0.975
+  epoch   5 loss=0.1594 val_auc=0.978
+  epoch  10 loss=0.1265 val_auc=0.981
+  epoch  15 loss=0.1052 val_auc=0.981
+  epoch  20 loss=0.0895 val_auc=0.980
+  epoch  25 loss=0.0747 val_auc=0.979
+  epoch  30 loss=0.0625 val_auc=0.978
+  epoch  35 loss=0.0523 val_auc=0.976
+  epoch  40 loss=0.0415 val_auc=0.976
+  epoch  44 loss=0.0376 val_auc=0.975
+[intent] saved GRU -> /Users/keshavkrishnan/ProjectPedestrian/artifacts/models/intention_gru.npz  test AUROC=0.972
+
+--- Capability evaluation (detection / tracking / trajectory / intention) ---
+
+== SUMMARY ==
+  risk_auroc_learned           0.9484995913632542
+  risk_auroc_ttc_motion        0.8699369723896788
+  risk_auprc_learned           0.361789695990212
+  risk_ece_learned             0.0012215044338123667
+  risk_ece_physics             0.3776178734693319
+  intention_auroc              0.9715348141212834
+  intention_lead_time_s        2.4575
+  detection_f1                 0.952
+  tracking_mota                0.745
+  tracking_idf1                0.7016
+  trajectory_minADE_m          0.8645
+  trajectory_minFDE_m          1.3157
+  elapsed_s                    156.1
+
+Metrics written to /Users/keshavkrishnan/ProjectPedestrian/artifacts/metrics
