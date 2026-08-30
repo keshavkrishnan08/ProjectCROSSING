@@ -1,0 +1,633 @@
+<meta charset="utf-8" />
+<title>CROSSING</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" />
+
+<style>
+:root{
+  --ground:#eef2f6; --panel:#ffffff; --panel2:#f5f8fb; --sunk:#e9eef3;
+  --line:#d3dde7; --line-soft:#e2e9f0;
+  --ink:#16222e; --ink-dim:#5a6a7a; --ink-faint:#8b9aa8;
+  --accent:#0e9e88; --accent-soft:#0e9e8822;
+  --person:#0f9d78; --vehicle:#2f6fe0; --cyclist:#8a4fd0;
+  --r-low:#2fa96f; --r-med:#c9902a; --r-high:#e0662f; --r-crit:#d61f4b;
+  --grid-cam:#c6d2de; --map-road:#dbe3ec; --map-cw:#c3d0dd;
+  --shadow:0 1px 2px rgba(20,34,46,.06),0 10px 30px rgba(20,34,46,.08);
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,Segoe UI,sans-serif;
+  --disp:'Chakra Petch','IBM Plex Sans',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#080d13; --panel:#0f1721; --panel2:#0c131b; --sunk:#0a1017;
+  --line:#1d2b39; --line-soft:#152230;
+  --ink:#c9d7e6; --ink-dim:#7c8fa3; --ink-faint:#556472;
+  --accent:#2ee6c6; --accent-soft:#2ee6c61e;
+  --person:#54d1a0; --vehicle:#5aa2ff; --cyclist:#c792ea;
+  --r-low:#37d29a; --r-med:#ffcf5c; --r-high:#ff9a52; --r-crit:#ff4d6d;
+  --grid-cam:#182634; --map-road:#111c27; --map-cw:#213241;
+  --shadow:0 1px 2px rgba(0,0,0,.5),0 14px 40px rgba(0,0,0,.45);
+}}
+:root[data-theme="dark"]{
+  --ground:#080d13; --panel:#0f1721; --panel2:#0c131b; --sunk:#0a1017;
+  --line:#1d2b39; --line-soft:#152230;
+  --ink:#c9d7e6; --ink-dim:#7c8fa3; --ink-faint:#556472;
+  --accent:#2ee6c6; --accent-soft:#2ee6c61e;
+  --person:#54d1a0; --vehicle:#5aa2ff; --cyclist:#c792ea;
+  --r-low:#37d29a; --r-med:#ffcf5c; --r-high:#ff9a52; --r-crit:#ff4d6d;
+  --grid-cam:#182634; --map-road:#111c27; --map-cw:#213241;
+  --shadow:0 1px 2px rgba(0,0,0,.5),0 14px 40px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:14px;
+  -webkit-font-smoothing:antialiased;overflow:hidden}
+.disp{font-family:var(--disp)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
+
+/* ---- top bar (minimal) ---- */
+.top{display:flex;align-items:center;gap:12px;padding:12px 20px;z-index:8}
+.brand{display:flex;align-items:center;gap:10px}
+.brand svg{width:24px;height:24px}
+.brand .n{font-family:var(--disp);font-weight:700;font-size:17px;letter-spacing:.18em}
+.brand .s{font-size:9.5px;color:var(--ink-dim);letter-spacing:.24em;text-transform:uppercase;margin-top:-2px}
+.top .sp{margin-left:auto}
+.live{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:var(--ink-dim)}
+.live .dot{width:7px;height:7px;border-radius:50%;background:var(--r-crit);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(214,31,75,.5)}70%{box-shadow:0 0 0 6px rgba(214,31,75,0)}100%{box-shadow:0 0 0 0 rgba(214,31,75,0)}}
+.tbtn{font-family:var(--mono);font-size:11px;color:var(--ink-dim);border:1px solid var(--line);border-radius:6px;padding:5px 10px}
+.tbtn:hover{color:var(--accent);border-color:var(--accent)}
+
+/* ---- stage ---- */
+.stage{position:relative;flex:1;min-height:0;margin:0 16px}
+.panels{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pane{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  overflow:hidden;box-shadow:var(--shadow);transition:box-shadow .5s,border-color .5s}
+.pane.emph{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 0 40px -8px var(--accent)}
+.pane .cap{position:absolute;top:11px;left:13px;font-family:var(--disp);font-size:11px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--ink-dim);z-index:3;pointer-events:none}
+.pane .cap b{color:var(--accent);font-weight:600}
+#pane-map .cap{left:auto;right:14px}
+.pane canvas{position:absolute;inset:0;width:100%;height:100%}
+.pane .leg{position:absolute;left:13px;bottom:10px;display:flex;gap:11px;font-family:var(--mono);font-size:10px;color:var(--ink-dim);z-index:3;pointer-events:none}
+.pane .leg span{display:flex;align-items:center;gap:5px}
+.pane .leg i{width:8px;height:8px;border-radius:2px;display:inline-block}
+/* city + proof overlays live inside the right pane / whole stage */
+#overlayCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4}
+
+/* ---- callout (lower third) ---- */
+.callout{position:absolute;left:50%;bottom:22px;transform:translateX(-50%) translateY(8px);
+  z-index:6;text-align:center;opacity:0;transition:opacity .5s,transform .5s;pointer-events:none;max-width:80%}
+.callout.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.callout .t{font-family:var(--disp);font-weight:600;font-size:23px;letter-spacing:.01em;
+  text-wrap:balance;text-shadow:0 2px 24px var(--ground)}
+.callout .sub{font-family:var(--mono);font-size:12.5px;color:var(--ink-dim);margin-top:5px}
+.chapter{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:6;font-family:var(--mono);font-size:11px;color:var(--ink-faint);letter-spacing:.1em;background:color-mix(in srgb,var(--ground) 70%,transparent);padding:3px 12px;border-radius:20px}
+.chapter b{color:var(--accent)}
+
+/* near-miss flash */
+.flash{position:absolute;inset:0;z-index:5;pointer-events:none;border-radius:14px;
+  box-shadow:inset 0 0 0 0 var(--r-crit);opacity:0;transition:opacity .12s}
+.flash.on{opacity:1;box-shadow:inset 0 0 120px -20px var(--r-crit),inset 0 0 0 3px var(--r-crit)}
+.nm-badge{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);z-index:7;
+  font-family:var(--disp);font-weight:700;letter-spacing:.14em;color:#fff;background:var(--r-crit);
+  padding:12px 26px;border-radius:10px;font-size:20px;opacity:0;transition:.25s;
+  box-shadow:0 12px 50px rgba(214,31,75,.5)}
+.nm-badge.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+/* floating mini-panels used in why / counterfactual / proof beats */
+.float{position:absolute;z-index:6;background:color-mix(in srgb,var(--panel) 88%,transparent);
+  border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow);
+  opacity:0;transform:translateY(10px);transition:opacity .5s,transform .5s;backdrop-filter:blur(6px);pointer-events:none}
+.float.show{opacity:1;transform:translateY(0)}
+.float .ft{font-family:var(--disp);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:9px}
+.decomp{right:26px;top:70px;width:250px}
+.drow{margin-bottom:8px}
+.drow .l{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px}
+.drow .l .v{font-family:var(--mono);color:var(--ink-dim)}
+.dbar{height:7px;border-radius:5px;background:var(--sunk);overflow:hidden}
+.dbar>i{display:block;height:100%;width:0;border-radius:5px;transition:width .8s cubic-bezier(.2,.7,.3,1)}
+.cf{left:26px;top:70px;width:264px}
+.cf .big{font-family:var(--disp);font-weight:700;font-size:15px;display:flex;align-items:baseline;gap:8px;margin:4px 0 10px}
+.cf .track{height:6px;border-radius:4px;background:var(--sunk);position:relative;margin:16px 0 6px}
+.cf .track>i{position:absolute;top:-4px;width:14px;height:14px;border-radius:50%;background:var(--accent);
+  box-shadow:0 2px 8px rgba(0,0,0,.3);transition:left .1s}
+.cf .rr{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;margin-top:8px}
+.cf .rr b{font-size:20px;font-family:var(--disp)}
+
+/* proof stat cards */
+.proof{position:absolute;inset:0;z-index:6;display:grid;place-content:center;gap:18px;
+  grid-template-columns:repeat(3,minmax(0,190px));opacity:0;transition:opacity .6s;pointer-events:none}
+.proof.show{opacity:1}
+.stat{background:color-mix(in srgb,var(--panel) 85%,transparent);border:1px solid var(--line);
+  border-radius:14px;padding:20px;text-align:center;backdrop-filter:blur(6px)}
+.stat .n{font-family:var(--disp);font-weight:700;font-size:40px;line-height:1;color:var(--accent)}
+.stat .l{font-size:12px;color:var(--ink-dim);margin-top:8px}
+.stat .d{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);margin-top:3px}
+
+/* end card */
+.endcard{position:absolute;inset:0;z-index:7;display:grid;place-content:center;text-align:center;
+  gap:14px;opacity:0;transition:opacity .8s;pointer-events:none;background:color-mix(in srgb,var(--ground) 70%,transparent)}
+.endcard.show{opacity:1}
+.endcard .big{font-family:var(--disp);font-weight:700;font-size:44px;letter-spacing:.14em;color:var(--accent)}
+.endcard .tl{font-size:15px;color:var(--ink-dim);max-width:520px;margin:0 auto;text-wrap:balance}
+.replay{margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--accent);border:1px solid var(--accent);
+  border-radius:8px;padding:9px 18px;pointer-events:auto}
+
+/* ---- transport ---- */
+.transport{display:flex;align-items:center;gap:16px;padding:12px 22px;z-index:8}
+.play{width:40px;height:40px;border-radius:11px;background:var(--accent);color:#04211c;display:grid;place-items:center;flex:0 0 auto}
+.play:hover{filter:brightness(1.08)}
+.scrub{position:relative;flex:1;height:34px;cursor:pointer}
+.scrub canvas{position:absolute;inset:0;width:100%;height:100%}
+.clock{font-family:var(--mono);font-size:12px;color:var(--ink-dim);min-width:78px}
+.clock b{color:var(--ink)}
+.chapters{display:flex;gap:4px}
+.cdot{width:9px;height:9px;border-radius:50%;background:var(--line);cursor:pointer;transition:.2s}
+.cdot:hover{transform:scale(1.3)}
+.cdot.on{background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+
+.loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--ground);z-index:50}
+.loading .disp{font-size:24px;letter-spacing:.18em;color:var(--accent)}
+@media (max-width:900px){.panels{grid-template-columns:1fr;grid-template-rows:1fr 1fr}.proof{grid-template-columns:1fr}}
+</style>
+
+<div id="app">
+  <div class="top">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <rect x="1.2" y="1.2" width="29.6" height="29.6" rx="8" stroke="var(--accent)" stroke-width="1.4"/>
+        <path d="M8 22 L14 10 L18 22 L24 10" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="16" cy="16" r="2.2" fill="var(--r-crit)"/>
+      </svg>
+      <div><div class="n">CROSSING</div><div class="s">Safety Intelligence</div></div>
+    </div>
+    <div class="sp"></div>
+    <div class="live"><span class="dot"></span><span id="scene-name">LIVE</span></div>
+    <button class="tbtn" id="theme">◐ theme</button>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="panels">
+      <div class="pane" id="pane-cam">
+        <div class="cap">CAMERA · <b id="cam-count">—</b></div>
+        <canvas id="cam"></canvas>
+        <div class="leg">
+          <span><i style="background:var(--person)"></i>person</span>
+          <span><i style="background:var(--vehicle)"></i>vehicle</span>
+          <span><i style="background:var(--cyclist)"></i>cyclist</span>
+        </div>
+      </div>
+      <div class="pane" id="pane-map">
+        <div class="cap">DIGITAL TWIN · <b>GROUND METRES</b></div>
+        <canvas id="map"></canvas>
+        <canvas id="overlayCanvas"></canvas>
+      </div>
+    </div>
+
+    <div class="chapter"><b id="ch-idx">01</b> / <span id="ch-total">12</span> · <span id="ch-name">—</span></div>
+    <div class="flash" id="flash"></div>
+    <div class="nm-badge" id="nmbadge">⚠ NEAR MISS</div>
+
+    <div class="float decomp" id="decomp"><div class="ft">Why — risk decomposition</div><div id="decomp-rows"></div></div>
+    <div class="float cf" id="cf"><div class="ft">Counterfactual</div>
+      <div class="big"><span id="cf-title">Vehicle 5 mph slower</span></div>
+      <div class="track"><i id="cf-knob"></i></div>
+      <div class="rr"><span>miss <b id="cf-miss">—</b> m</span><span>risk <b id="cf-risk">—</b></span></div>
+      <div class="mono" id="cf-verdict" style="font-size:12px;margin-top:8px;color:var(--r-low)"></div>
+    </div>
+
+    <div class="proof" id="proof"></div>
+    <div class="endcard" id="endcard">
+      <div class="big">CROSSING</div>
+      <div class="tl">From street video to an operational model of pedestrian safety — every person, vehicle, interaction and near-miss, predicted before it happens.</div>
+      <button class="replay" id="replay">↻ replay</button>
+    </div>
+
+    <div class="callout" id="callout"><div class="t" id="co-t"></div><div class="sub" id="co-s"></div></div>
+  </div>
+
+  <div class="transport">
+    <button class="play" id="play" aria-label="play/pause"></button>
+    <div class="clock"><b id="t-now">0.0</b> / <span id="t-dur">0.0</span>s</div>
+    <div class="scrub" id="scrub"><canvas id="scrubc"></canvas></div>
+    <div class="chapters" id="chapters"></div>
+  </div>
+</div>
+
+<div class="loading" id="loading"><div class="disp">CROSSING</div></div>
+
+<script>
+"use strict";
+function cssv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function riskColor(r){return r>=80?cssv('--r-crit'):r>=60?cssv('--r-high'):r>=35?cssv('--r-med'):cssv('--r-low');}
+function kindColor(k){return k==='p'?cssv('--person'):k==='v'?cssv('--vehicle'):k==='c'?cssv('--cyclist'):cssv('--ink-dim');}
+function bandColor(b){return {low:cssv('--r-low'),medium:cssv('--r-med'),high:cssv('--r-high'),critical:cssv('--r-crit')}[b]||cssv('--r-low');}
+function matInv3(m){const[a,b,c,d,e,f,g,h,i]=[m[0][0],m[0][1],m[0][2],m[1][0],m[1][1],m[1][2],m[2][0],m[2][1],m[2][2]];
+  const A=e*i-f*h,B=-(d*i-f*g),C=d*h-e*g,D=-(b*i-c*h),E=a*i-c*g,F=-(a*h-b*g),G=b*f-c*e,H=-(a*f-c*d),I=a*e-b*d;const det=a*A+b*B+c*C;
+  return[[A/det,D/det,G/det],[B/det,E/det,H/det],[C/det,F/det,I/det]];}
+function apply3(m,x,y){const u=m[0][0]*x+m[0][1]*y+m[0][2],v=m[1][0]*x+m[1][1]*y+m[1][2],w=m[2][0]*x+m[2][1]*y+m[2][2];return[u/w,v/w];}
+function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function lerp(a,b,t){return a+(b-a)*t;}
+
+const S={data:null,H:null,Hinv:null,fi:0,playing:true,t:0,last:0,dur:0,beats:[],beatI:-1,
+  focus:null,mode:'scene',flashT:-9,nmShown:new Set(),mapView:null,camView:null};
+
+async function boot(){
+  let d=window.CROSSING_DATA;
+  if(!d){try{d=await(await fetch('/api/demo')).json();}catch(e){d=null;}}
+  if(!d){document.getElementById('loading').innerHTML='<div class="disp" style="font-size:14px">no data — run <code>crossing demo</code></div>';return;}
+  S.data=d;S.H=d.scene.homography;S.Hinv=matInv3(S.H);
+  document.getElementById('scene-name').textContent='LIVE · '+d.scene.name.replace('intersection_seed','SEED ').toUpperCase();
+  buildBeats();buildChapters();setupUI();
+  S.mapView=fullMapView();
+  document.getElementById('loading').style.display='none';
+  // deterministic seek/theme hooks (e.g. #t=23.5&dark) — used for previews/screenshots
+  if(/dark/.test(location.hash))document.documentElement.setAttribute('data-theme','dark');
+  else if(/light/.test(location.hash))document.documentElement.setAttribute('data-theme','light');
+  const mh=location.hash.match(/t=([\d.]+)/);
+  if(mh){S.t=Math.min(S.dur-0.01,parseFloat(mh[1]));S.playing=false;syncPlay();}
+  requestAnimationFrame(loop);
+}
+
+/* ============ storyboard ============ */
+function buildBeats(){
+  const d=S.data, rt=d.frames[d.frames.length-1].t;
+  // Choose the hero near-miss with the most compelling counterfactual across BOTH levers
+  // (slower vehicle / delayed pedestrian): one that clears the conflict with a big risk
+  // drop, weighted by how dramatic the climax is.
+  const nm=d.events.filter(e=>e.is_near_miss && d.counterfactuals[String(e.id)]);
+  function cfQuality(e){const c=d.counterfactuals[String(e.id)];let best={score:-1,kind:'vehicle_speed'};
+    for(const kind of['vehicle_speed','pedestrian_wait']){const arr=(c&&c[kind])||[];if(!arr.length)continue;
+      const clears=arr.some(r=>!r.near_miss);const drop=arr[0].risk-Math.min(...arr.map(r=>r.risk));
+      const s=(clears?150:0)+drop;if(s>best.score)best={score:s,kind};}
+    best.score+=e.peak_risk*0.6;return best;}
+  nm.forEach(e=>{e._cfq=cfQuality(e);});
+  nm.sort((a,b)=>b._cfq.score-a._cfq.score);
+  const hero=nm[0]||d.events.slice().sort((a,b)=>b.peak_risk-a.peak_risk)[0];
+  S.heroSweep=(hero&&hero._cfq&&hero._cfq.kind)||'vehicle_speed';
+  const hp=hero?hero.peak_t:rt*0.5;
+  const ip=findIntentionPed()||{id:hero&&hero.a_id,t0:hp-6,t1:hp-2.5};
+  // count entity classes in an early frame for the perception beat
+  const B=[];
+  B.push({name:'Title',dur:2.6,mode:'title',callout:['CROSSING','A street is a network of interactions — modelled in real time']});
+  B.push({name:'Perception',dur:4.4,mode:'scene',from:1.0,to:5.2,emph:'cam',fx:{count:1},
+          callout:['Every actor, detected','person · vehicle · cyclist · crosswalk · signal']});
+  B.push({name:'Tracking',dur:4.0,mode:'scene',from:5.2,to:9.2,emph:'cam',
+          callout:['Persistent identities','IDs survive occlusion — trajectories, not boxes']});
+  B.push({name:'World model',dur:3.6,mode:'scene',from:9.2,to:Math.min(12.8,hp-7),emph:'map',
+          callout:['Pixels → ground truth','position · velocity · heading, in metres']});
+  B.push({name:'Intention',dur:4.6,mode:'scene',from:Math.max(0.5,ip.t0-0.4),to:ip.t1+0.6,emph:'map',focusEnt:ip.id,fx:{ring:1},
+          callout:['Will they cross?','Crossing intent predicted seconds early']});
+  B.push({name:'Prediction',dur:3.4,mode:'scene',from:hp-2.2,to:hp-0.4,emph:'map',focusEnt:hero&&hero.a_id,focusVeh:hero&&hero.b_id,fx:{pred:1},
+          callout:['Every possible future','multi-modal trajectories for people and cars']});
+  B.push({name:'Near miss',dur:2.4,mode:'scene',from:hp,to:hp,freeze:1,event:hero&&hero.id,focusEnt:hero&&hero.a_id,focusVeh:hero&&hero.b_id,fx:{nm:1},
+          callout:['','']});
+  B.push({name:'Why',dur:4.4,mode:'scene',from:hp,to:hp,freeze:1,event:hero&&hero.id,focusEnt:hero&&hero.a_id,focusVeh:hero&&hero.b_id,fx:{why:1},
+          callout:['Why it was dangerous','the score, decomposed']});
+  const cfTitle=(S.heroSweep==='pedestrian_wait')?'What if they had waited?':'What if the car were slower?';
+  B.push({name:'Counterfactual',dur:5.2,mode:'scene',from:hp,to:hp,freeze:1,event:hero&&hero.id,focusEnt:hero&&hero.a_id,focusVeh:hero&&hero.b_id,fx:{cf:1},
+          callout:[cfTitle,'decision support, not just description']});
+  B.push({name:'City',dur:5.0,mode:'city',fx:{heat:1},
+          callout:['Where the street is systematically unsafe','thousands of interactions, aggregated']});
+  B.push({name:'Proof',dur:5.0,mode:'proof',fx:{stats:1},
+          callout:['Measured on unseen scenes','calibrated risk, predicted early']});
+  B.push({name:'End',dur:4.0,mode:'end',callout:['','']});
+  // assign absolute times
+  let acc=0; for(const b of B){b.start=acc;acc+=b.dur;} S.dur=acc; S.beats=B; S.hero=hero;
+  document.getElementById('t-dur').textContent=S.dur.toFixed(1);
+  document.getElementById('ch-total').textContent=B.length;
+}
+
+function findIntentionPed(){
+  // a pedestrian whose crossing intent clearly rises (approach we can showcase)
+  const hist={};
+  S.data.frames.forEach(fr=>fr.e.forEach(e=>{if(e.k==='p'){(hist[e.id]=hist[e.id]||[]).push({t:fr.t,int:e.int});}}));
+  let best=null;
+  for(const id in hist){const h=hist[id];if(h.length<24)continue;
+    let lo=null,hi=null;
+    for(const s of h){if(s.int<0.35&&lo===null)lo=s.t;if(s.int>0.72&&lo!==null&&hi===null)hi=s.t;}
+    if(lo!==null&&hi!==null&&hi>lo+0.5){const score=Math.min(hi-lo,3.5)+h.length*0.008;
+      if(!best||score>best.score)best={id:+id,t0:lo,t1:hi,score};}
+  }
+  return best;
+}
+function buildChapters(){
+  const el=document.getElementById('chapters');el.innerHTML='';
+  S.beats.forEach((b,i)=>{const d=document.createElement('div');d.className='cdot';d.title=b.name;
+    d.onclick=()=>{S.t=b.start+0.001;S.playing=true;syncPlay();};el.appendChild(d);});
+}
+
+/* ============ canvas plumbing ============ */
+function fit(id){const c=document.getElementById(id);const r=c.getBoundingClientRect();
+  const dpr=Math.min(window.devicePixelRatio||1,2);c.width=Math.max(2,r.width*dpr);c.height=Math.max(2,r.height*dpr);
+  const ctx=c.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return{ctx,w:r.width,h:r.height};}
+function fullCamView(cv){const W=S.data.scene.image_w,H=S.data.scene.image_h;
+  return{cx:W/2,cy:H/2,s:Math.min(cv.w/W,cv.h/H)};}
+function camMap(cv,view){view=view||fullCamView(cv);
+  return{s:view.s,px:(x,y)=>[cv.w/2+(x-view.cx)*view.s,cv.h/2+(y-view.cy)*view.s]};}
+function camTarget(cv){
+  const full=fullCamView(cv);const foc=S.focus;
+  if(!foc||!(foc.ent||foc.veh))return full;
+  const bbs=curFrame().e.filter(e=>e.bb&&(e.id===foc.ent||e.id===foc.veh)).map(e=>e.bb);
+  if(!bbs.length)return full;
+  let x1=Math.min(...bbs.map(b=>b[0])),y1=Math.min(...bbs.map(b=>b[1])),
+      x2=Math.max(...bbs.map(b=>b[2])),y2=Math.max(...bbs.map(b=>b[3]));
+  const px=(x2-x1)*0.7+90,py=(y2-y1)*0.7+90;x1-=px;x2+=px;y1-=py;y2+=py;
+  let s=Math.min(cv.w/(x2-x1),cv.h/(y2-y1));s=Math.min(s,full.s*3.6);
+  return{cx:(x1+x2)/2,cy:(y1+y2)/2,s};}
+function fullMapView(){const[xmin,ymin,xmax,ymax]=S.data.scene.ground_bounds;
+  return{cx:(xmin+xmax)/2,cy:(ymin+ymax)/2,hs:Math.max(xmax-xmin,ymax-ymin)/2*1.06};}
+function mapMap(cv,view){view=view||S.mapView||fullMapView();
+  const s=Math.min(cv.w,cv.h)/(2*view.hs);
+  return{s,px:(x,y)=>[cv.w/2+(x-view.cx)*s,cv.h/2-(y-view.cy)*s]};}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+
+function curFrame(){return S.data.frames[S.fi];}
+function frameAtTime(t){const F=S.data.frames;let lo=0;for(let i=0;i<F.length;i++){if(F[i].t<=t)lo=i;else break;}return lo;}
+
+/* ============ CAMERA ============ */
+function renderCam(reveal){
+  const cv=fit('cam');const ctx=cv.ctx;
+  const target=camTarget(cv);
+  if(!S.camView)S.camView=target;
+  else S.camView={cx:lerp(S.camView.cx,target.cx,0.12),cy:lerp(S.camView.cy,target.cy,0.12),s:lerp(S.camView.s,target.s,0.12)};
+  const M=camMap(cv,S.camView);ctx.clearRect(0,0,cv.w,cv.h);
+  ctx.save();ctx.beginPath();ctx.rect(0,0,cv.w,cv.h);ctx.clip();
+  const[ox,oy]=M.px(0,0);ctx.fillStyle=cssv('--sunk');ctx.fillRect(ox,oy,S.data.scene.image_w*M.s,S.data.scene.image_h*M.s);
+  ctx.strokeStyle=cssv('--grid-cam');ctx.lineWidth=1;ctx.globalAlpha=.55;
+  const[gx0,gy0,gx1,gy1]=S.data.scene.ground_bounds;
+  for(let gx=Math.ceil(gx0/4)*4;gx<=gx1;gx+=4){ctx.beginPath();let st=false;for(let gy=gy0;gy<=gy1;gy+=1.5){const[ix,iy]=apply3(S.Hinv,gx,gy);const[px,py]=M.px(ix,iy);st?ctx.lineTo(px,py):(ctx.moveTo(px,py),st=true);}ctx.stroke();}
+  for(let gy=Math.ceil(gy0/4)*4;gy<=gy1;gy+=4){ctx.beginPath();let st=false;for(let gx=gx0;gx<=gx1;gx+=1.5){const[ix,iy]=apply3(S.Hinv,gx,gy);const[px,py]=M.px(ix,iy);st?ctx.lineTo(px,py):(ctx.moveTo(px,py),st=true);}ctx.stroke();}
+  ctx.globalAlpha=1;
+  for(const cw of S.data.scene.crosswalks){ctx.beginPath();cw.polygon.forEach((p,i)=>{const[ix,iy]=apply3(S.Hinv,p[0],p[1]);const[px,py]=M.px(ix,iy);i?ctx.lineTo(px,py):ctx.moveTo(px,py);});ctx.closePath();ctx.fillStyle=cssv('--map-cw');ctx.globalAlpha=.45;ctx.fill();ctx.globalAlpha=1;}
+  const fr=curFrame();const foc=S.focus;
+  const ents=fr.e.filter(e=>e.bb).slice().sort((a,b)=>a.bb[3]-b.bb[3]);
+  const nShow=reveal==null?ents.length:Math.floor(ents.length*reveal);
+  ents.forEach((e,idx)=>{
+    if(idx>=nShow)return;
+    const[x1,y1]=M.px(e.bb[0],e.bb[1]),[x2,y2]=M.px(e.bb[2],e.bb[3]);
+    const isFoc=foc&&(foc.ent===e.id||foc.veh===e.id);
+    const dim=foc&&foc.dim&&!isFoc;
+    const hot=e.risk>=60;const col=hot?riskColor(e.risk):kindColor(e.k);
+    ctx.globalAlpha=dim?.28:1;
+    ctx.lineWidth=isFoc?2.6:(hot?2:1.3);ctx.strokeStyle=isFoc?cssv('--accent'):col;
+    if((hot||isFoc)&&!dim){ctx.shadowColor=isFoc?cssv('--accent'):riskColor(e.risk);ctx.shadowBlur=12;}
+    roundRect(ctx,x1,y1,x2-x1,y2-y1,3);ctx.stroke();ctx.shadowBlur=0;
+    if(!dim){ctx.fillStyle=isFoc?cssv('--accent'):col;ctx.font='600 10px '+cssv('--mono');
+      const tag=(e.k==='p'?'P':e.k==='v'?'V':'C')+e.id;const tw=ctx.measureText(tag).width+8;
+      ctx.fillRect(x1,y1-13,tw,13);ctx.fillStyle=cssv('--ground');ctx.fillText(tag,x1+4,y1-3.5);}
+    ctx.globalAlpha=1;
+  });
+  ctx.restore();
+  document.getElementById('cam-count').textContent=fr.e.length+' TRACKED';
+}
+
+/* ============ MAP ============ */
+let MAPPROJ=null;
+function renderMap(){
+  const cv=fit('map');const ctx=cv.ctx;const M=mapMap(cv);MAPPROJ=M;ctx.clearRect(0,0,cv.w,cv.h);
+  ctx.lineCap='round';
+  for(const r of S.data.scene.roads){const pl=r.polyline;const[ax,ay]=M.px(pl[0][0],pl[0][1]),[bx,by]=M.px(pl[1][0],pl[1][1]);
+    ctx.strokeStyle=cssv('--map-road');ctx.lineWidth=r.width*M.s;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();
+    ctx.strokeStyle=cssv('--line');ctx.lineWidth=1;ctx.setLineDash([6,7]);ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();ctx.setLineDash([]);}
+  for(const cw of S.data.scene.crosswalks){ctx.beginPath();cw.polygon.forEach((p,i)=>{const[px,py]=M.px(p[0],p[1]);i?ctx.lineTo(px,py):ctx.moveTo(px,py);});ctx.closePath();ctx.fillStyle=cssv('--map-cw');ctx.fill();
+    const p0=cw.polygon[0],p1=cw.polygon[1],p3=cw.polygon[3];ctx.strokeStyle=cssv('--ground');ctx.globalAlpha=.5;ctx.lineWidth=1.3;
+    for(let t=0.1;t<1;t+=0.17){const[ax,ay]=M.px(p0[0]+(p1[0]-p0[0])*t,p0[1]+(p1[1]-p0[1])*t);const[bx,by]=M.px(p3[0]+(p1[0]-p0[0])*t,p3[1]+(p1[1]-p0[1])*t);ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();}ctx.globalAlpha=1;}
+  const fr=curFrame();const foc=S.focus;const byId={};fr.e.forEach(e=>byId[e.id]=e);
+  for(const lt of S.data.scene.traffic_lights){const st=fr.sig[String(lt.id)];if(!st)continue;const[px,py]=M.px(lt.position[0],lt.position[1]);
+    const col=(st==='green'||st==='walk')?cssv('--r-low'):(st==='yellow'||st==='flashing')?cssv('--r-med'):cssv('--r-crit');
+    ctx.fillStyle=col;ctx.shadowColor=col;ctx.shadowBlur=8;ctx.beginPath();ctx.arc(px,py,3.4,0,7);ctx.fill();ctx.shadowBlur=0;}
+  for(const it of(fr.i||[])){if(it.risk<30)continue;const a=byId[it.a],b=byId[it.b];if(!a||!b)continue;
+    const[ax,ay]=M.px(a.p[0],a.p[1]),[bx,by]=M.px(b.p[0],b.p[1]);ctx.strokeStyle=riskColor(it.risk);
+    ctx.globalAlpha=clamp(it.risk/100+.25,0,1);ctx.lineWidth=it.risk>=60?2:1;ctx.setLineDash(it.risk>=60?[]:[3,3]);
+    ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;}
+  if(foc&&foc.pred){for(const pr of(fr.pr||[])){const e=byId[pr.id];if(!e)continue;
+    if(foc.ent!==pr.id&&foc.veh!==pr.id)continue;
+    pr.m.forEach(mode=>{ctx.strokeStyle=kindColor(e.k);ctx.globalAlpha=.25+.6*mode.p;ctx.lineWidth=2.4;ctx.lineJoin='round';
+      const[sx,sy]=M.px(e.p[0],e.p[1]);ctx.beginPath();ctx.moveTo(sx,sy);mode.pts.forEach(pt=>{const[px,py]=M.px(pt[1],pt[2]);ctx.lineTo(px,py);});ctx.stroke();
+      const last=mode.pts[mode.pts.length-1];const[ex,ey]=M.px(last[1],last[2]);ctx.beginPath();ctx.arc(ex,ey,2+3*mode.p,0,7);ctx.fill();
+      // mode label at endpoint
+      if(mode.p>0.18){ctx.globalAlpha=.85;ctx.fillStyle=cssv('--ink-dim');ctx.font='9px '+cssv('--mono');ctx.fillText(Math.round(mode.p*100)+'% '+mode.l,ex+6,ey+3);}});ctx.globalAlpha=1;}}
+  for(const e of fr.e){const[px,py]=M.px(e.p[0],e.p[1]);const col=kindColor(e.k);
+    const isFoc=foc&&(foc.ent===e.id||foc.veh===e.id);const dim=foc&&foc.dim&&!isFoc;
+    ctx.globalAlpha=dim?.2:1;
+    if(e.sp>0.3){const[vx,vy]=M.px(e.p[0]+e.v[0]*.6,e.p[1]+e.v[1]*.6);ctx.strokeStyle=col;ctx.globalAlpha=dim?.14:.7;ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(vx,vy);ctx.stroke();ctx.globalAlpha=dim?.2:1;}
+    if(e.risk>=35&&!dim){ctx.strokeStyle=riskColor(e.risk);ctx.lineWidth=2;ctx.beginPath();ctx.arc(px,py,e.k==='v'?9:7,0,7);ctx.stroke();
+      if(e.risk>=60){ctx.shadowColor=riskColor(e.risk);ctx.shadowBlur=10;ctx.stroke();ctx.shadowBlur=0;}}
+    ctx.fillStyle=col;
+    if(e.k==='v'){ctx.save();ctx.translate(px,py);ctx.rotate(-e.hd);const L=(e.cls==='bus'?11:e.cls==='truck'?7.5:4.6)*M.s,Wd=1.9*M.s;roundRect(ctx,-L/2,-Wd/2,L,Wd,2);ctx.fill();ctx.restore();}
+    else{ctx.beginPath();ctx.arc(px,py,isFoc?5.5:4,0,7);ctx.fill();}
+    if(isFoc){ctx.strokeStyle=cssv('--accent');ctx.lineWidth=2;ctx.beginPath();ctx.arc(px,py,13,0,7);ctx.stroke();}
+    ctx.globalAlpha=1;
+  }
+  // HUD intention gauge for the focused pedestrian (intention beat)
+  if(foc&&foc.ring){const e=byId[foc.ent];if(e&&e.k==='p')drawIntentionHUD(ctx,cv,e);}
+  const ov=fit('overlayCanvas');ov.ctx.clearRect(0,0,ov.w,ov.h);
+}
+function drawIntentionHUD(ctx,cv,e){
+  const cx=70,cy=104,R=36;const p=e.int;const col=riskColor(p*90);
+  ctx.save();
+  ctx.strokeStyle=cssv('--sunk');ctx.lineWidth=8;ctx.beginPath();ctx.arc(cx,cy,R,0,7);ctx.stroke();
+  ctx.strokeStyle=col;ctx.lineWidth=8;ctx.lineCap='round';ctx.beginPath();
+  ctx.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+2*Math.PI*p);ctx.stroke();
+  ctx.fillStyle=cssv('--ink');ctx.textAlign='center';ctx.font='700 20px '+cssv('--disp');
+  ctx.fillText(Math.round(p*100),cx,cy+3);
+  ctx.fillStyle=cssv('--ink-dim');ctx.font='9px '+cssv('--mono');ctx.fillText('P(CROSS)',cx,cy+16);
+  ctx.font='9px '+cssv('--mono');ctx.fillStyle=col;ctx.fillText('±'+Math.round(e.istd*100)+'%',cx,cy+R+16);
+  ctx.textAlign='left';ctx.restore();
+}
+
+/* ============ CITY (heatmap bloom on the map pane) ============ */
+function renderCity(prog){
+  // base map faint, then heat cells grow in with prog
+  const cvm=fit('map');const ctx=cvm.ctx;const M=mapMap(cvm,fullMapView());MAPPROJ=null;ctx.clearRect(0,0,cvm.w,cvm.h);
+  for(const r of S.data.scene.roads){const pl=r.polyline;const[ax,ay]=M.px(pl[0][0],pl[0][1]),[bx,by]=M.px(pl[1][0],pl[1][1]);
+    ctx.strokeStyle=cssv('--map-road');ctx.lineWidth=r.width*M.s;ctx.lineCap='round';ctx.globalAlpha=.6;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();ctx.globalAlpha=1;}
+  const g=S.data.city.grid;const[xmin,ymin]=g.bounds;const cell=g.cell;let maxc=1;
+  for(const row of g.near_miss)for(const v of row)maxc=Math.max(maxc,v);
+  for(let i=0;i<g.ny;i++)for(let j=0;j<g.nx;j++){const v=g.near_miss[i][j];const mr=g.mean_risk[i][j];if(v===0&&mr===0)continue;
+    const[px,py]=M.px(xmin+j*cell,ymin+(i+1)*cell);const w=cell*M.s;const inten=v/maxc;
+    const grow=ease(clamp(prog*1.6-(i/g.ny)*.4,0,1));
+    ctx.fillStyle=v>0?riskColor(60+inten*40):cssv('--r-low');ctx.globalAlpha=(v>0?(0.2+0.65*inten):0.1)*grow;
+    ctx.fillRect(px+w*(1-grow)/2,py+w*(1-grow)/2,w*grow,w*grow);ctx.globalAlpha=1;}
+  // camera pane shows the ranked hotspots as bars (visual, not a table)
+  renderHotspotBars(prog);
+}
+function renderHotspotBars(prog){
+  const cv=fit('cam');const ctx=cv.ctx;ctx.clearRect(0,0,cv.w,cv.h);
+  const hs=S.data.city.hotspots.slice(0,6);const max=Math.max(...hs.map(h=>h.near_misses),1);
+  const pad=26,top=54,rowH=(cv.h-top-46)/hs.length;
+  ctx.fillStyle=cssv('--ink-dim');ctx.font='600 11px '+cssv('--disp');ctx.fillText('RANKED HOTSPOTS · NEAR-MISS COUNT',pad,34);
+  hs.forEach((h,i)=>{const y=top+i*rowH;const w=(cv.w-2*pad-210)*(h.near_misses/max)*ease(clamp(prog*1.4-i*.08,0,1));
+    ctx.fillStyle=i===0?cssv('--r-crit'):cssv('--accent');ctx.globalAlpha=i===0?1:.7;
+    roundRect(ctx,pad+118,y+rowH*.2,Math.max(2,w),rowH*.5,4);ctx.fill();ctx.globalAlpha=1;
+    ctx.fillStyle=cssv('--ink');ctx.font='12px '+cssv('--sans');ctx.fillText(h.zone,pad,y+rowH*.55);
+    ctx.fillStyle=cssv('--ink-dim');ctx.font='600 12px '+cssv('--mono');ctx.textAlign='right';
+    ctx.fillText(h.near_misses,cv.w-pad,y+rowH*.55);ctx.textAlign='left';});
+  const p=S.data.city.patterns;
+  ctx.fillStyle=cssv('--ink-faint');ctx.font='11px '+cssv('--mono');
+  ctx.fillText((p.total_interactions||0).toLocaleString()+' interactions · '+p.total_near_misses+' near-misses analysed across '+(S.data.city.scenes||10)+' windows',pad,cv.h-16);
+}
+
+/* ============ overlay UI driven by beats ============ */
+function showCallout(b,prog){
+  const co=document.getElementById('callout');
+  const t=b.callout[0],s=b.callout[1];
+  if(!t&&!s){co.classList.remove('show');return;}
+  const on=prog>0.06&&prog<0.94;
+  document.getElementById('co-t').textContent=t;document.getElementById('co-s').textContent=s;
+  co.classList.toggle('show',on);
+}
+function emphPane(which){document.getElementById('pane-cam').classList.toggle('emph',which==='cam');
+  document.getElementById('pane-map').classList.toggle('emph',which==='map');}
+function hideFloats(){for(const id of['decomp','cf','proof','endcard'])document.getElementById(id).classList.remove('show');
+  document.getElementById('nmbadge').classList.remove('on');document.getElementById('flash').classList.remove('on');}
+
+function fillDecomp(ev){
+  const rows=(ev.explanation||[]).filter(c=>c.points>0).slice(0,5);
+  document.getElementById('decomp-rows').innerHTML=rows.map(c=>
+    `<div class="drow"><div class="l"><span>${c.factor}</span><span class="v">+${Math.round(c.points)}</span></div>
+     <div class="dbar"><i data-w="${Math.min(100,c.share*100)}" style="background:${riskColor(ev.peak_risk)}"></i></div></div>`).join('');
+  requestAnimationFrame(()=>document.querySelectorAll('#decomp-rows .dbar>i').forEach(i=>i.style.width=i.dataset.w+'%'));
+}
+function fillCF(ev,prog){
+  const cf=S.data.counterfactuals[String(ev.id)];if(!cf)return;
+  const sweep=S.heroSweep||'vehicle_speed';const arr=cf[sweep];if(!arr||!arr.length)return;
+  const k=Math.min(arr.length-1,Math.floor(prog*arr.length));const r=arr[k];
+  let title;
+  if(sweep==='vehicle_speed')title=(r.delta_mph<=0.05)?'Vehicle at recorded speed':`Vehicle ${r.delta_mph} mph slower`;
+  else title=(r.delay_s<=0.01)?'Pedestrian crosses as recorded':`Pedestrian waits ${r.delay_s.toFixed(1)} s`;
+  document.getElementById('cf-title').textContent=title;
+  document.getElementById('cf-knob').style.left=(prog*100)+'%';
+  document.getElementById('cf-miss').textContent=r.min_dcpa;
+  const rk=document.getElementById('cf-risk');rk.textContent=Math.round(r.risk);rk.style.color=riskColor(r.risk);
+  const v=document.getElementById('cf-verdict');v.textContent=r.near_miss?'⚠ still a near miss':'✓ conflict avoided';
+  v.style.color=r.near_miss?cssv('--r-crit'):cssv('--r-low');
+}
+function renderProof(prog){
+  const el=document.getElementById('proof');
+  const m=S.data.metrics||{};const sm=m.summary||{};const risk=(m.risk&&m.risk.table&&m.risk.table.learned)||{};
+  const caps=m.capabilities||{};
+  const cards=[
+    {n:(risk.auroc||sm.risk_auroc_learned||0),f:v=>v.toFixed(3),l:'Near-miss risk AUROC',d:'beats every baseline'},
+    {n:(sm.intention_lead_time_s||0),f:v=>v.toFixed(1)+'s',l:'Crossing warning',d:'before road entry'},
+    {n:(risk.ece||sm.risk_ece_learned||0),f:v=>v.toFixed(3),l:'Calibration error',d:'risk means what it says'},
+  ];
+  if(!el.dataset.built){el.innerHTML=cards.map((c,i)=>`<div class="stat"><div class="n" id="stat${i}">—</div><div class="l">${c.l}</div><div class="d">${c.d}</div></div>`).join('');el.dataset.built='1';}
+  cards.forEach((c,i)=>{const v=c.n*ease(clamp(prog*1.5,0,1));document.getElementById('stat'+i).textContent=c.f(v);});
+}
+
+/* ============ director ============ */
+function director(){
+  // find current beat
+  let bi=0;for(let i=0;i<S.beats.length;i++){if(S.t>=S.beats[i].start)bi=i;}
+  const b=S.beats[bi];const prog=clamp((S.t-b.start)/b.dur,0,1);
+  if(bi!==S.beatI){S.beatI=bi;onBeatEnter(b);}
+  document.getElementById('ch-idx').textContent=String(bi+1).padStart(2,'0');
+  document.getElementById('ch-name').textContent=b.name;
+  document.querySelectorAll('.cdot').forEach((d,i)=>d.classList.toggle('on',i===bi));
+  emphPane(b.emph);
+  const leg=document.querySelector('#pane-cam .leg');if(leg)leg.style.opacity=(b.mode==='scene')?'1':'0';
+  S.focus={ent:b.focusEnt||null,veh:b.focusVeh||null,dim:!!(b.focusEnt||b.focusVeh),ring:!!(b.fx&&b.fx.ring),pred:!!(b.fx&&b.fx.pred)};
+  updateMapZoom(b);
+  showCallout(b,prog);
+
+  if(b.mode==='scene'){
+    S.mode='scene';
+    const rt=b.freeze?b.from:lerp(b.from,b.to,prog);
+    S.fi=frameAtTime(rt);
+    let reveal=(b.fx&&b.fx.count)?ease(clamp(prog*1.4,0,1)):null;
+    renderCam(reveal);renderMap();
+    // near-miss flash + badge
+    if(b.fx&&b.fx.nm){const on=prog>0.15;document.getElementById('flash').classList.toggle('on',on&&prog<0.8);
+      document.getElementById('nmbadge').classList.toggle('on',on);
+      const ev=S.data.events.find(e=>e.id===b.event);
+      if(ev){document.getElementById('nmbadge').innerHTML='⚠ NEAR MISS · <span style="font-size:14px">'+Math.round(ev.peak_risk)+' risk · '+ev.min_dcpa.toFixed(2)+'m</span>';}
+    } else {document.getElementById('nmbadge').classList.remove('on');document.getElementById('flash').classList.remove('on');}
+    // why decomposition
+    const dc=document.getElementById('decomp');
+    if(b.fx&&b.fx.why){dc.classList.add('show');} else dc.classList.remove('show');
+    // counterfactual
+    const cf=document.getElementById('cf');
+    if(b.fx&&b.fx.cf){cf.classList.add('show');const ev=S.data.events.find(e=>e.id===b.event);if(ev)fillCF(ev,prog);} else cf.classList.remove('show');
+    document.getElementById('proof').classList.remove('show');document.getElementById('endcard').classList.remove('show');
+  } else if(b.mode==='city'){
+    S.mode='city';hideFloats();renderCity(prog);
+  } else if(b.mode==='proof'){
+    S.mode='proof';hideFloats();document.getElementById('proof').classList.add('show');renderProof(prog);
+    // keep the (populated) scene faint behind the stat cards
+    renderCam(null);renderMap();
+  } else if(b.mode==='title'){
+    S.mode='title';hideFloats();S.fi=frameAtTime(0.5);renderCam(ease(prog));renderMap();
+  } else if(b.mode==='end'){
+    S.mode='end';hideFloats();document.getElementById('endcard').classList.add('show');
+    S.fi=frameAtTime(S.hero?S.hero.peak_t:2);renderCam(null);renderMap();
+  }
+  document.getElementById('t-now').textContent=S.t.toFixed(1);
+}
+function updateMapZoom(b){
+  // target: zoom to the focused actors on focus beats, else the full intersection
+  let target=fullMapView();
+  if(S.mode!=='city'&&(b.focusEnt||b.focusVeh)){
+    const fr=curFrame();const pts=[];
+    fr.e.forEach(e=>{if(e.id===b.focusEnt||e.id===b.focusVeh)pts.push(e.p);});
+    if(pts.length){const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);
+      const cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2;
+      const spread=Math.max(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys));
+      target={cx,cy,hs:Math.max(9,spread/2+6)};}
+  }
+  if(!S.mapView){S.mapView=target;return;}
+  const k=0.12;
+  S.mapView={cx:lerp(S.mapView.cx,target.cx,k),cy:lerp(S.mapView.cy,target.cy,k),hs:lerp(S.mapView.hs,target.hs,k)};
+}
+function onBeatEnter(b){
+  hideFloats();
+  const proof=document.getElementById('proof');
+  if(b.fx&&b.fx.why){const ev=S.data.events.find(e=>e.id===b.event);if(ev)fillDecomp(ev);}
+  if(b.mode==='proof')proof.removeAttribute('data-built'),proof.innerHTML='';
+}
+
+/* ============ loop ============ */
+function loop(ts){
+  if(!S.last)S.last=ts;const dt=(ts-S.last)/1000;S.last=ts;
+  if(S.playing){S.t+=dt;if(S.t>=S.dur){S.t=S.dur-0.001;S.playing=false;syncPlay();}}
+  director();renderScrub();requestAnimationFrame(loop);
+}
+
+/* ============ scrub bar ============ */
+function renderScrub(){
+  const cv=fit('scrubc');const ctx=cv.ctx;ctx.clearRect(0,0,cv.w,cv.h);const pad=4,W=cv.w-2*pad;
+  // beat segments
+  S.beats.forEach((b,i)=>{const x=pad+W*b.start/S.dur,w=W*b.dur/S.dur;
+    ctx.fillStyle=i%2?cssv('--line-soft'):cssv('--line');ctx.globalAlpha=.6;
+    ctx.fillRect(x+1,cv.h/2-3,w-2,6);ctx.globalAlpha=1;});
+  // near-miss ticks mapped to their beat
+  const nmBeat=S.beats.find(b=>b.fx&&b.fx.nm);
+  if(nmBeat){const x=pad+W*(nmBeat.start+nmBeat.dur*0.4)/S.dur;ctx.fillStyle=cssv('--r-crit');
+    ctx.beginPath();ctx.moveTo(x,2);ctx.lineTo(x-4,10);ctx.lineTo(x+4,10);ctx.closePath();ctx.fill();}
+  const px=pad+W*S.t/S.dur;ctx.strokeStyle=cssv('--accent');ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(px,2);ctx.lineTo(px,cv.h-2);ctx.stroke();
+  ctx.fillStyle=cssv('--accent');ctx.beginPath();ctx.arc(px,cv.h/2,4,0,7);ctx.fill();
+}
+
+/* ============ UI ============ */
+function syncPlay(){document.getElementById('play').innerHTML=S.playing
+  ?'<svg width="14" height="14"><rect x="2" y="1.5" width="3.4" height="11" rx="1" fill="currentColor"/><rect x="8.6" y="1.5" width="3.4" height="11" rx="1" fill="currentColor"/></svg>'
+  :'<svg width="14" height="14"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>';}
+function setupUI(){
+  document.getElementById('play').onclick=()=>{if(S.t>=S.dur-0.01)S.t=0;S.playing=!S.playing;syncPlay();};syncPlay();
+  document.getElementById('replay').onclick=()=>{S.t=0;S.playing=true;syncPlay();};
+  document.getElementById('scrub').onclick=e=>{const r=e.currentTarget.getBoundingClientRect();S.t=clamp((e.clientX-r.left-4)/(r.width-8),0,1)*S.dur;};
+  document.getElementById('theme').onclick=()=>{const cur=document.documentElement.getAttribute('data-theme');
+    const dark=cur?cur==='dark':window.matchMedia('(prefers-color-scheme:dark)').matches;
+    document.documentElement.setAttribute('data-theme',dark?'light':'dark');};
+  window.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();if(S.t>=S.dur-0.01)S.t=0;S.playing=!S.playing;syncPlay();}});
+}
+boot();
+</script>
