@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+from collections import deque
 from pathlib import Path
 
 import cv2
@@ -86,6 +87,11 @@ def hit_probability(ped, vehicles, fps=30.0, frame_w=1280.0, explain=False):
     best = 0.0
     best_detail = None
     for v in vehicles:
+        # A vehicle that is not actually moving is never a threat, however close it looks.
+        # ``moving`` is a robust flag from real displacement over recent frames (set in the
+        # processing loop); it defeats Kalman velocity jitter that a parked car can show.
+        if not v.get("moving", True):
+            continue
         Xv, Zv = _ground_xz(v, f, cx)
         d_real = math.hypot(Xp - Xv, Zp - Zv)          # metres, depth-aware
         if d_real > 9.0:                               # genuinely far apart in 3D
@@ -157,6 +163,7 @@ def process(video, start=0, count=250, out_w=960, out_mp4=None, json_out=None, r
     writer, per_frame, n = None, [], 0
     risk_ema = {}                                     # track_id -> smoothed risk
     history = {}                                      # track_id -> detection provenance
+    pos_hist = {}                                     # track_id -> recent foot positions
     peak = {"risk": -1.0}                             # highest-risk instant, for lineage
     keep = {"person", "bicycle"} | VEHICLE_CLASSES
     for k in range(count):
@@ -177,6 +184,23 @@ def process(video, start=0, count=250, out_w=960, out_mp4=None, json_out=None, r
             (peds if t.cls in ("person", "bicycle") else vehicles).append(item)
             hp = history.setdefault(t.track_id, {"cls": t.cls, "conf": [], "first": k, "last": k})
             hp["conf"].append(round(float(t.score), 3)); hp["last"] = k
+            dq = pos_hist.setdefault(t.track_id, deque(maxlen=10))
+            dq.append(_foot([b.x1, b.y1, b.x2, b.y2]))
+        # Robust motion per vehicle: net foot displacement over recent frames, which cancels the
+        # oscillatory box jitter a parked car shows. A vehicle counts as moving only if it has
+        # actually travelled; a brand-new track (too little history) is treated as not moving so a
+        # transient Kalman velocity spike cannot raise a false alarm.
+        for v in vehicles:
+            dq = pos_hist.get(v["id"])
+            vh = max(v["box"][3] - v["box"][1], 12.0)
+            if dq and len(dq) >= 3:
+                (x0, y0), (x1, y1) = dq[0], dq[-1]
+                dspeed = math.hypot(x1 - x0, y1 - y0) / (len(dq) - 1)
+                v["dspeed"] = round(dspeed, 2)
+                v["moving"] = dspeed > max(0.4, 0.012 * vh)
+            else:
+                v["dspeed"] = 0.0
+                v["moving"] = False
         frame_w = frame.shape[1]
         for p in peds:
             r, detail = hit_probability(p, vehicles, fps=fps, frame_w=frame_w, explain=True)
