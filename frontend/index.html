@@ -181,7 +181,10 @@ function buildSpark(id,frames){
   const dot=E('circle',{cx:x(0),cy:y(0),r:3,fill:INK});svg.appendChild(head);svg.appendChild(dot);
   document.getElementById(id).appendChild(svg);return {x,y,head,dot};}
 const allCounts=[];
-function attach(id){const V=document.getElementById('v'+id);let data=null,sp=null;V.play&&V.play().catch(()=>{});
+const PLAYBACK=0.5;   // play the clips at half speed so each close call is easy to follow
+function attach(id){const V=document.getElementById('v'+id);let data=null,sp=null;
+  const slow=()=>{try{V.playbackRate=PLAYBACK;}catch(e){}};slow();V.addEventListener('loadedmetadata',slow);V.addEventListener('play',slow);
+  V.play&&V.play().catch(()=>{});
   fetch(V.dataset.counts).then(r=>r.json()).then(j=>{data=j;sp=buildSpark('sp'+id,j.frames);allCounts.push(j.frames);maybeHist();}).catch(()=>{});
   function tick(){if(data){const i=Math.min(data.frames.length-1,Math.max(0,Math.floor(V.currentTime*data.fps)));
     const [np,ar,mp]=data.frames[i]||[0,0,0];
