@@ -21,13 +21,18 @@ MEDIA = ROOT / "frontend" / "media"
 FRONTEND = ROOT / "frontend"
 MEDIA.mkdir(parents=True, exist_ok=True)
 
-# (asset, start, count, scene, environment description [no commas]) ordered; first 4 = Live videos
+# (asset, start, count, scene, environment description [no commas]) ordered.
+# The first LIVE_N are the close-call clips shown on the Live tab; the rest are calm scenes
+# processed only so the "collision risk is rare" histogram reflects a representative corpus.
+LIVE_N = 6
 ENVS = [
-    ("yt_mE44pLMpfkw.mp4", 1727, 78, "Mid-block crossing", "a pedestrian crosses right in front of a moving car"),
-    ("traffic2.mp4", 180, 260, "Junction with a turning bus", "a daytime junction where a bus turns across the crossing"),
-    ("c_20221532.mp4", 300, 250, "Busy avenue", "a wide avenue thick with cars and people"),
+    ("yt_mE44pLMpfkw.mp4", 1727, 78, "Mid-block crossing", "a pedestrian crosses in front of a moving car"),
+    ("crossing_street.mp4", 344, 96, "Dusk city crossing", "a busy city crossing at dusk"),
     ("c_36306846.mp4", 120, 250, "Downtown crosswalk", "a downtown crosswalk on a bright day"),
-    ("c_14365420.mp4", 60, 70, "Street corner", "a busy street corner"),
+    ("c_14365420.mp4", 60, 70, "Street corner", "a car swings past people on a corner"),
+    ("cross_a.mp4", 12, 66, "Crossing signal", "a pedestrian steps off as a car crosses"),
+    ("c_34952428.mp4", 268, 82, "Marked crosswalk", "a truck rolls through a crowded crosswalk"),
+    ("c_20221532.mp4", 300, 250, "Busy avenue", "a wide avenue thick with cars and people"),
     ("c_3552510.mp4", 60, 70, "Pedestrian street", "a lively pedestrian street"),
     ("c_3894943.mp4", 20, 70, "Shared street", "a narrow shared street of walkers and cars"),
     ("vtest.avi", 40, 70, "Open plaza", "an open plaza with foot traffic and a parked van"),
@@ -41,6 +46,7 @@ def peak_frame(meta):
 
 def main():
     gallery, fleet_scenes, lineage_records, risk_streams = [], [], [], {}
+    all_risk = []                                      # every frame's peak risk, for the histogram
     for i, (asset, start, count, scene, env) in enumerate(ENVS, start=1):
         src = ASSETS / asset
         if not src.exists():
@@ -50,10 +56,11 @@ def main():
         meta = process(str(src), start, count, out_w=960, out_mp4=str(mp4), json_out=None)
         risk_series = [round(f["max_risk"], 3) for f in meta["frames"]]
         risk_streams[scene] = risk_series
+        all_risk.extend(round(f["max_risk"] * 100) for f in meta["frames"])
         peak_pct = round(max(risk_series, default=0.0) * 100)
         at_risk_now = max((f["at_risk"] for f in meta["frames"]), default=0)
-        # Live videos: first four -> served as safety1..4 with per-frame counts + lineage
-        if i <= 4:
+        # Live videos: the first LIVE_N close-call clips -> served as safety1..N with counts + lineage
+        if i <= LIVE_N:
             shutil.copy(mp4, MEDIA / f"safety{i}.mp4")
             counts = [[f["n_ped"], f["at_risk"], round(f["max_risk"] * 100)] for f in meta["frames"]]
             json.dump({"fps": meta["fps"], "frames": counts, "lineage": meta.get("lineage")},
@@ -89,8 +96,14 @@ def main():
     reliab = json.load(open(ROOT / "artifacts" / "metrics" / "risk.json")).get("reliability", {})
     json.dump({"model_version": MODEL_VERSION, "drift": drift, "calibration": reliab},
               open(MEDIA / "monitoring.json", "w"))
-    print("gallery entries:", len(gallery), "| fleet cameras:", fs["cameras"],
-          "| lineage:", len(lineage_records), "| drift feeds:", len(drift["feeds"]))
+
+    # ---- histogram over the whole corpus (close-call + calm) for the "risk is rare" chart ----
+    bins = [0] * 10
+    for r in all_risk:
+        bins[min(9, int(r) // 10)] += 1
+    json.dump({"bins": bins, "frames": len(all_risk)}, open(MEDIA / "risk_hist.json", "w"))
+    print("live:", LIVE_N, "| gallery entries:", len(gallery), "| corpus frames:", len(all_risk),
+          "| hist bins:", bins)
 
 
 if __name__ == "__main__":
