@@ -4,7 +4,8 @@ from __future__ import annotations
 import numpy as np
 
 from crossing.monitoring import (CalibrationTracker, ks_statistic,
-                                  population_stability_index, drift_report)
+                                  population_stability_index, drift_report,
+                                  temporal_drift_report)
 from crossing.privacy import REDACTION_POLICY, redact_frame
 from crossing.provenance import MODEL_VERSION, trace_risk
 from crossing.security import AuditLog, resolve_principal
@@ -97,6 +98,16 @@ def test_drift_report_ranks_worst_feed():
     rep = drift_report(ref, {"calm": ref, "busy": list(np.ones(50))})
     assert rep["feeds"][0]["feed"] == "busy"       # sorted worst-first
     assert rep["feeds"][0]["band"] == "drift"
+
+
+def test_temporal_drift_flags_a_shifting_feed_not_a_steady_one():
+    steady = [0.0] * 40                       # calm the whole time -> stable
+    shifting = [0.0] * 20 + [0.9] * 20        # risk ramps in the second half -> drift
+    rep = temporal_drift_report({"calm": steady, "ramping": shifting})
+    bands = {r["feed"]: r["band"] for r in rep["feeds"]}
+    assert bands["calm"] == "stable"
+    assert bands["ramping"] == "drift"
+    assert rep["feeds"][0]["feed"] == "ramping"     # worst-first
 
 
 def test_calibration_tracker_perfect_is_low_ece():
