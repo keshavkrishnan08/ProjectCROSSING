@@ -1,0 +1,25 @@
+{
+  "detection": {
+    "precision": 0.9991,
+    "recall": 0.9093,
+    "f1": 0.952
+  },
+  "tracking": {
+    "mota": 0.745,
+    "idf1": 0.7016,
+    "id_switches": 403.75,
+    "fragmentation": 4.2075,
+    "gt_coverage": 0.9903
+  },
+  "trajectory": {
+    "minADE_m": 0.8307,
+    "minFDE_m": 1.2687,
+    "miss_rate@2m": 0.2532
+  },
+  "intention": {
+    "mean_lead_time_s": 2.76,
+    "median_lead_time_s": 1.195,
+    "recall_before_entry": 0.8953
+  },
+  "n_scenes": 4
+}
