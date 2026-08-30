@@ -1,168 +1,126 @@
-# CROSSING — pedestrian‑vehicle safety intelligence
+# CROSSING
 
-> **A street isn't a collection of objects. It's a constantly changing network of
-> interactions. CROSSING models that network in real time.**
+**Pedestrian safety intelligence. It turns ordinary street video into a live read on who is
+about to be hit.**
 
-CROSSING turns ordinary street video into a continuously‑updated model of every person,
-vehicle, interaction, risk event, and emerging danger in an environment. The object
-detector is *just the sensor*; the project is the intelligence layer on top of it:
+A street is not a pile of objects. It is a constantly changing set of interactions between
+people and vehicles. CROSSING models that. Object detection is just the sensor. On top of it
+the system tracks every person and every vehicle, recovers how far apart they really are in
+the world, and estimates for each pedestrian a probability of being hit.
+
+Live demo: **https://crossing-pi.vercel.app**
 
 ```
-video  →  perception (detect + pose)  →  tracking (persistent IDs)
-       →  world model (image → ground metres; velocity / accel / heading / jerk)
-       →  behaviour (crossing intention, attention)  →  prediction (multi‑modal trajectories)
-       →  interaction engine (TTC / DCPA / TCPA / PET / path‑conflict)
-       →  risk engine (calibrated) + near‑miss detection + explanation + counterfactuals
-       →  event graph + city hotspots  →  operational dashboard
+video  ->  detect (YOLOv3)  ->  track (Kalman + ByteTrack, persistent IDs)
+       ->  world model (image to ground metres; velocity, heading, motion)
+       ->  depth-aware risk (probability of being hit, green to red)
+       ->  near-miss detection, explanation, counterfactuals
+       ->  event graph, city hotspots, operational read
 ```
 
-**Observe → Understand → Predict → Act.**
+Observe, understand, predict, act.
 
-## Live demo
+## What the demo shows
 
-**→ https://crossing-pi.vercel.app** — real YOLOv3 detection on real street video from
-four distinct environments, each pedestrian box painted by its depth‑aware
-probability‑of‑being‑hit (green → red), with live commentary on every close call.
+Six real close-call clips from very different places (a mid-block crossing, a dusk city
+street, a downtown crosswalk, a busy corner, a signalised crossing, a crowded marked
+crosswalk). Every clip runs through the real pipeline. Each pedestrian box is painted by its
+probability of being hit, from green (safe) to red (danger), and a subtitle calls out the
+close calls as they happen. Faces and licence plates are blurred inside the pipeline before
+any frame is shown.
 
-Run it locally with the full API (calibrated metrics, near‑miss feed, hotspots):
+The site has three tabs. **Live** is the six videos. **Explanation** describes the product in
+plain language. **Results** is the measured model performance.
+
+Run it locally with the full API:
 
 ```bash
 pip install -r requirements.txt
-python -m uvicorn crossing.api.server:app --port 8000   # → http://localhost:8000
+python -m uvicorn crossing.api.server:app --port 8000   # open http://localhost:8000
 ```
 
-`/` is the safety page above; `/dashboard` is the full cinematic pipeline; `/api/metrics`
-serves the measured model numbers.
+`/` is the safety page. `/api/metrics` serves the measured numbers. The governed endpoints
+below (`/api/fleet`, `/api/lineage`, `/api/monitoring`, `/api/audit`, `/api/whoami`) are also
+served locally.
 
----
+## The core idea
 
-## What it does (measured on held‑out test scenes)
+Judging danger from where boxes sit in the 2D image is wrong. A car can overlap a pedestrian
+on screen and still be far behind or ahead of them in depth. So CROSSING recovers an
+approximate metric position for every actor from its box (height gives depth, horizontal
+offset gives lateral position) and measures the real distance between them. A car that only
+looks close scores near zero.
+
+Two more conditions gate the score, so it fires only on genuine danger:
+
+1. The vehicle has to be **actually moving**. A parked or stopped car never raises risk,
+   however close it is. Motion is confirmed from real displacement over recent frames, which
+   ignores the box jitter a stationary car shows, not from a single noisy velocity reading.
+2. The vehicle has to be **headed toward the person**. A car moving away or across is not a
+   threat. Risk then ramps up with how fast the gap is closing.
+
+## What it does (measured on held-out test scenes)
 
 | Capability | Metric | Result |
 |---|---|---|
-| Near‑miss **risk** prediction | AUROC (learned) vs. TTC+motion baseline | **0.951** vs. 0.868 |
-| Risk **calibration** | Expected Calibration Error (learned vs. physics) | **0.002** vs. 0.368 |
-| Crossing **intention** | AUROC · mean early‑warning before road entry | **0.961** · **2.8 s** |
-| **Detection** | precision / recall / F1 | 0.999 / 0.909 / 0.952 |
-| **Tracking** | MOTA / IDF1 | 0.745 / 0.702 |
-| **Trajectory** | minADE / minFDE | 0.83 m / 1.27 m |
+| Near-miss risk prediction | AUROC (learned) vs TTC and motion baseline | **0.951** vs 0.868 |
+| Risk calibration | Expected Calibration Error (learned vs physics) | **0.002** vs 0.368 |
+| Crossing intention | AUROC and mean early warning before road entry | **0.961** and **2.8 s** |
+| Detection | precision / recall / F1 | 0.999 / 0.909 / 0.952 |
+| Tracking | MOTA / IDF1 | 0.745 / 0.702 |
+| Trajectory | minADE / minFDE | 0.83 m / 1.27 m |
 
-The headline research result: **a learned interaction model beats an engineered
-TTC‑based risk score at predicting near‑misses before they happen, *and* is calibrated** —
-"risk 80" really does mean ≈80% of such situations become near‑misses.
-
-Every number is produced by `python -m scripts.train_all` and written to
-`artifacts/metrics/`; nothing here is hand‑entered.
-
----
-
-## Governance (production posture)
-
-A safety model that watches public streets has to be operable and accountable, not just
-accurate. Four layers make it deployable:
-
-* **Provenance** (`crossing/provenance/`) — every risk score is content‑addressed to the
-  model that made it and carries its full lineage: which detections, over how many frames,
-  at what confidence, tracked into which actor, closing with which vehicle, through which
-  metric components. The **Trace** tab renders that chain. "Where did this 97 come from?"
-  always has an answer.
-* **Privacy** (`crossing/privacy/`) — faces and licence plates are mosaic‑redacted *inside*
-  the pipeline, before any frame is written or served, so raw imagery never leaves the
-  processing step. The de‑identified frames are what the demo actually plays.
-* **Access control + audit** (`crossing/security/`) — the API is role‑gated (`viewer` /
-  `operator` / `analyst` / `admin`); the raw feed, the lineage, and the audit log each need
-  a higher scope, and every governed read is written to an append‑only audit log.
-* **Scale + monitoring** (`crossing/streaming/`, `crossing/monitoring/`) — a fleet registry
-  models many camera feeds with health and backpressure (the **Fleet** tab), and drift
-  (population‑stability + KS) plus calibration tracking watch whether the live input is still
-  the distribution the model was built for (the **Monitor** tab).
-
-Governed endpoints: `/api/fleet`, `/api/lineage`, `/api/monitoring`, `/api/audit`,
-`/api/whoami`. Try them with `X-API-Key: crossing-analyst-key`.
-
----
-
-## The interactive demo
-
-A single self‑contained page (`frontend/index.html`) plays the whole story as a cinematic,
-auto‑playing product tour over a real processed scene: perception → tracking → world model
-→ crossing intent → multi‑modal prediction → **near‑miss freeze** → risk decomposition →
-counterfactual ("what if the car were 5 mph slower?") → city‑scale hotspot map → the
-measured results. Two synchronised views — a **camera** overlay and a **digital‑twin**
-top‑down map in ground metres — carry it.
-
-```bash
-crossing serve            # then open http://127.0.0.1:8000
-```
-
----
-
-## Quickstart
-
-```bash
-pip install -r requirements.txt          # numpy/scipy/pandas/sklearn/networkx/fastapi
-pip install -e .                          # installs the `crossing` CLI
-
-crossing simulate --seed 7 --duration 40  # generate a scene (ground truth)
-crossing run --seed 7 --db                # full pipeline → event database
-crossing train                            # train models + full evaluation (~3 min)
-crossing demo                             # build the web‑demo data bundle
-crossing serve                            # launch the dashboard + JSON API
-crossing evaluate --seeds 201 202         # capability metrics on unseen scenes
-```
-
-No GPU, no dataset download, and no heavyweight ML frameworks are required — the entire
-platform runs on NumPy + scikit‑learn. `torch` / `ultralytics` / `xgboost` are **optional
-accelerators**, auto‑detected when present.
-
----
+The headline result is that a learned interaction model beats an engineered TTC-based score
+at predicting near-misses before they happen, and it is calibrated, so a risk of 80 really
+does mean that about 80 out of 100 such situations become a near-miss. Every number is
+produced by `python -m scripts.train_all` and written to `artifacts/metrics/`. Nothing is
+hand-entered.
 
 ## How it works
 
-### Data — a physically‑grounded simulator, and a path to real footage
-Developing and *evaluating* an intelligence stack needs ground truth. `crossing.data.simulator`
-generates signalised‑intersection scenes with IDM car‑following, permissive turns, a
-signal controller, gap‑acceptance pedestrians with observable **crossing‑intention
-dynamics**, social‑force spacing, and **seeded conflict scenarios** (permissive‑left,
-red‑light jaywalk, occluded emergence) that reliably produce genuine near‑misses. It
-renders each actor to an image‑space detection through the scene homography with calibrated
-noise, misses, false positives, and depth‑ordered occlusion — so tracking has real work to
-do — and back‑references ground truth for evaluation. Every scene is deterministic in its
-seed, so train/val/test splits are **by scene** (never by frame → no leakage).
+**Data.** Developing and evaluating a stack like this needs ground truth, so
+`crossing.data.simulator` generates signalised-intersection scenes with car-following,
+permissive turns, a signal controller, gap-acceptance pedestrians with evolving crossing
+intention, and seeded conflict scenarios that reliably produce genuine near-misses. It
+renders each actor to an image-space detection through the scene geometry with calibrated
+noise, misses, false positives, and occlusion, then keeps the ground truth for scoring.
+Splits are by scene, so no pedestrian appears in both train and test. Real PIE and JAAD
+footage plugs into the same schema through `crossing.data.pie_adapter`.
 
-Real **PIE** / **JAAD** footage plugs into the exact same schema through
-`crossing.data.pie_adapter`; everything downstream is capture‑agnostic.
+**Perception, tracking, world model.** YOLOv3 detection feeds a ByteTrack-style tracker
+(two-stage association, Kalman motion, a lost-track buffer for occlusion). A homography lifts
+each ground-contact point onto the road plane, where a Kalman filter yields stable position,
+velocity, heading, and acceleration in metres.
 
-### Perception → tracking → world model
-YOLO‑style detection (or replayed/annotated boxes) → a **ByteTrack**‑style tracker
-(two‑stage high/low‑score association, Kalman motion, lost‑track buffer for occlusion) →
-a homography that lifts each ground‑contact point onto the road plane, where a
-constant‑acceleration Kalman filter yields stable position/velocity/acceleration/heading/
-jerk in **metres**. Reconstruction error on unseen scenes: ~0.16 m (pedestrians) / 0.45 m
-(vehicles).
+**Behaviour, prediction, interaction, risk.** Crossing intention comes from a from-scratch
+NumPy GRU (back-prop through time, gradient checked) that emits a calibrated probability
+evolving over time rather than a yes or no. Prediction produces several goal-conditioned
+futures per actor. Interaction is closed-form conflict geometry (TTC, DCPA, TCPA, PET, path
+conflict), unit-tested against hand-computed cases. Risk fuses these into a calibrated score
+that is also its own explanation, since each factor contributes a known share.
 
-### Behaviour, prediction, interaction, risk
-* **Crossing intention** — a from‑scratch NumPy **GRU** (back‑prop‑through‑time,
-  gradient‑checked) over 1.5 s of behavioural features, emitting a *calibrated probability
-  that evolves over time* (0.21 → 0.68 → 0.94), never a boolean.
-* **Prediction** — multiple goal‑conditioned futures per entity (continue / stop / turn
-  back), weighted by intention and kinematics.
-* **Interaction** — closed‑form conflict geometry (TTC, DCPA/TCPA, PET, path‑conflict),
-  unit‑tested against hand‑computed cases.
-* **Risk** — an interpretable physics fusion (which doubles as the *explanation* — each
-  factor's share of the score) benchmarked against a **calibrated gradient‑boosted** model.
-  Near‑miss labels use the *realised* closest separation, not noise‑biased predicted CPA.
-* **Counterfactuals** — replay the two actors' recorded trajectories under a modified
-  control (slower vehicle / delayed pedestrian) and recompute the geometry. Explicitly a
-  model simulation, not causal proof.
+**Event graph and city intelligence.** Each scene becomes a knowledge graph of actors,
+events, and zones. Across many scenes a city analyzer builds a spatial risk map and ranked
+hotspots. Everything persists to a SQLite event database you can query in plain SQL.
 
-### Event graph + city intelligence
-Per scene, a NetworkX knowledge graph of entities → events → zones. Across many scenes, a
-`CityAnalyzer` builds a spatial risk map, ranked hotspots, and systemic patterns ("where is
-the environment systematically unsafe, and why?"). Everything persists to a SQLite event
-database you can query in plain SQL.
+## Governance (production posture)
 
----
+A model watching public streets has to be operable and accountable, not just accurate. These
+layers run in the backend and API.
+
+* **Provenance** (`crossing/provenance/`). Every risk score is tied to the content-addressed
+  version of the model that made it and carries its full lineage: which detections, over how
+  many frames, at what confidence, tracked into which actor, closing with which vehicle,
+  through which components. Where a score came from always has an answer.
+* **Privacy** (`crossing/privacy/`). Faces and plates are mosaic-redacted inside the pipeline
+  before any frame is written or served, so raw imagery never leaves the processing step.
+* **Access control and audit** (`crossing/security/`). The API is role-gated across viewer,
+  operator, analyst, and admin. The raw feed, the lineage, and the audit log each need a
+  higher scope, and every governed read is written to an append-only audit log.
+* **Scale and monitoring** (`crossing/streaming/`, `crossing/monitoring/`). A fleet registry
+  models many camera feeds with health and backpressure, and drift (population stability plus
+  KS) with calibration tracking watches whether the live input still matches what the model
+  was built for.
 
 ## Layout
 
@@ -170,37 +128,36 @@ database you can query in plain SQL.
 crossing/
   schema.py            unified data model (entities, interactions, events, recordings)
   config.py            coordinate conventions, physical constants, risk thresholds
-  data/                simulator · PIE/JAAD adapter · SQLite event DB
-  perception/          detector (YOLO/replay) · pose cues
-  tracking/            Kalman filters · ByteTrack · assisted tracker
-  worldmodel/          homography · motion (kinematics) · state assembly
-  behavior/            behavioural features · crossing‑intention (heuristic + GRU)
-  prediction/          multi‑modal trajectory prediction
-  interaction/         conflict‑geometry metrics · interaction engine
-  risk/                risk engine · near‑miss detection · explanation · counterfactuals
-  ml/                  numpy NN (GRU+Adam) · datasets · baselines · training · evaluation · calibration
-  graph/               event graph · city analyzer
-  provenance/          content‑addressed model version · risk lineage records
-  privacy/             in‑pipeline face + plate redaction
-  security/            role‑based access control · append‑only audit log
-  streaming/           camera‑fleet registry · bounded ingestion queue
-  monitoring/          PSI/KS drift · calibration tracking
-  pipeline.py          end‑to‑end orchestrator
-  api/                 FastAPI dashboard + JSON API
-frontend/index.html    self‑contained cinematic dashboard
-scripts/               train_all · build_demo
-tests/                 conflict geometry · homography · Kalman · GRU grad‑check · pipeline smoke
+  data/                simulator, PIE/JAAD adapter, SQLite event DB
+  perception/          detector (YOLO or replay), pose cues
+  tracking/            Kalman filters, ByteTrack, assisted tracker
+  worldmodel/          homography, motion (kinematics), state assembly
+  behavior/            behavioural features, crossing intention (heuristic and GRU)
+  prediction/          multi-modal trajectory prediction
+  interaction/         conflict-geometry metrics, interaction engine
+  risk/                risk engine, near-miss detection, explanation, counterfactuals
+  ml/                  numpy NN (GRU and Adam), datasets, baselines, training, evaluation
+  graph/               event graph, city analyzer
+  provenance/          content-addressed model version, risk lineage
+  privacy/             in-pipeline face and plate redaction
+  security/            role-based access control, append-only audit log
+  streaming/           camera-fleet registry, bounded ingestion queue
+  monitoring/          PSI and KS drift, calibration tracking
+  pipeline.py          end-to-end orchestrator
+  api/                 FastAPI page and JSON API
+frontend/index.html    the live safety page (Live, Explanation, Results)
+scripts/               safety_video, build_gallery, scan_closecalls, train_all
+tests/                 geometry, homography, Kalman, GRU grad-check, motion gate, governance
 ```
-
----
 
 ## Honesty
 
-* Splits are **by scene**, so no pedestrian appears in both train and test.
-* The risk score is **calibrated** (reliability diagram + ECE), not asserted.
-* Counterfactuals are **model simulations** over recorded trajectories, not proof that any
-  single intervention would have changed the outcome.
-* Simulated results demonstrate the *method*; the same pipeline runs on PIE/JAAD via the
-  adapter, where these numbers must be re‑earned on real footage.
+* Splits are by scene, so no pedestrian appears in both train and test.
+* The risk score is calibrated (reliability diagram and ECE), not asserted.
+* The measured table above comes from the learned model trained and evaluated on the
+  simulator with ground truth. The risk shown on the real demo videos is the depth-aware
+  geometric scorer, since the real footage has no labelled outcomes to score against.
+* Counterfactuals are model simulations over recorded trajectories, not proof that any single
+  intervention would have changed the outcome.
 
-MIT‑licensed.
+MIT licensed.
