@@ -154,10 +154,12 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>selectTab(t.dataset.t
 if(location.hash.slice(1))selectTab(location.hash.slice(1));
 
 const IDS=[1,2,3,4,5,6];
+// portrait clips get a vertical crop focus so their close call stays in the 16 by 9 cell
+const VPOS={5:'center 63%',6:'center 27%'};
 const vwrap=document.getElementById('videos');
 IDS.forEach(id=>{const fig=document.createElement('figure');
   fig.innerHTML=`<div class="stage">
-      <video id="v${id}" src="/media/safety${id}.mp4" data-counts="/media/safety${id}_counts.json" autoplay muted loop playsinline></video>
+      <video id="v${id}" src="/media/safety${id}.mp4" data-counts="/media/safety${id}_counts.json" style="object-position:${VPOS[id]||'center'}" autoplay muted loop playsinline></video>
       <div class="hud"><span class="dot" id="d${id}"></span><span id="s${id}">0%</span></div>
       <div class="sub" id="cc${id}"></div>
     </div>
