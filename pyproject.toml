@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crossing"
+version = "0.1.0"
+description = "CROSSING — a real-time pedestrian-vehicle safety intelligence platform"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Keshav Krishnan" }]
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "pandas>=2.1",
+    "scikit-learn>=1.4",
+    "networkx>=3.2",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+]
+
+[project.optional-dependencies]
+accel = ["ultralytics>=8.1", "opencv-python-headless", "torch>=2.2", "xgboost", "lightgbm"]
+dev = ["pytest>=8.0", "pytest-cov"]
+
+[project.scripts]
+crossing = "crossing.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["crossing*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

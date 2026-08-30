@@ -1,0 +1,15 @@
+# CROSSING — core runtime (all confirmed working on Python 3.11–3.14)
+numpy>=1.26
+scipy>=1.11
+pandas>=2.1
+scikit-learn>=1.4
+networkx>=3.2
+fastapi>=0.110
+uvicorn[standard]>=0.29
+
+# --- Optional accelerators (auto-detected; the platform runs fully without them) ---
+# Install these on a machine/Python with available wheels to upgrade specific stages:
+#   ultralytics>=8.1          # real YOLO detection + YOLO-Pose (replaces the sim/replay detector)
+#   opencv-python-headless    # video decode + homography helpers
+#   torch>=2.2                # GPU temporal transformer (replaces the built-in numpy GRU)
+#   xgboost / lightgbm        # gradient-boosted risk model (sklearn HistGradientBoosting used otherwise)

@@ -1,0 +1,32 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.env
+.pytest_cache/
+.coverage
+htmlcov/
+.DS_Store
+.ipynb_checkpoints/
+
+# Large generated / downloaded assets (keep the small demo recording + metrics tracked)
+artifacts/recordings/*.json
+!artifacts/recordings/demo_scene.json
+artifacts/models/*.pkl
+artifacts/models/*.npz
+artifacts/figures/
+artifacts/crossing_artifact.html
+artifacts/metrics/*.log
+artifacts/db/
+data/PIE/
+data/JAAD/
+# large downloaded detection assets (re-fetch with scripts/fetch_assets.sh)
+assets/
+*.avi
+# keep the small baked demo video + counts that the localhost page serves
+!frontend/media/detected.mp4
+!frontend/media/counts.json
