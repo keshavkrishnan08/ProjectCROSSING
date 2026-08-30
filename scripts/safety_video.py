@@ -24,6 +24,8 @@ import numpy as np
 from scripts.detect_video import YoloOnnx, cross_class_nms
 from crossing.schema import Detection, BBox
 from crossing.tracking.bytetrack import ByteTracker
+from crossing.privacy import redact_frame
+from crossing.provenance import trace_risk
 
 ASSETS = Path(__file__).resolve().parent.parent / "assets"
 VEHICLE_CLASSES = {"car", "truck", "bus", "van", "motorbike", "motorcycle"}
@@ -64,7 +66,7 @@ def _ground_xz(item, f, cx):
     return x, z
 
 
-def hit_probability(ped, vehicles, fps=30.0, frame_w=1280.0):
+def hit_probability(ped, vehicles, fps=30.0, frame_w=1280.0, explain=False):
     """Estimate P(pedestrian is hit) from REAL (depth-aware) geometry + tracked motion.
 
     The core fix over naive image proximity: recover an approximate metric position for every
@@ -72,6 +74,9 @@ def hit_probability(ped, vehicles, fps=30.0, frame_w=1280.0):
     merely overlaps a pedestrian in the 2D frame but sits far behind or ahead of them scores
     near zero. On top of the real distance we still require the vehicle to be moving and headed
     toward the person, and we ramp risk with the resulting time-to-collision.
+
+    With ``explain=True`` also returns the winning vehicle and the metric components behind the
+    score, so the value can be traced back to its inputs (see :mod:`crossing.provenance`).
     """
     f = 0.9 * frame_w
     cx = 0.5 * frame_w
@@ -79,6 +84,7 @@ def hit_probability(ped, vehicles, fps=30.0, frame_w=1280.0):
     ph = max(ped["box"][3] - ped["box"][1], 12.0)
     pvx, pvy = ped["vx"], ped["vy"]
     best = 0.0
+    best_detail = None
     for v in vehicles:
         Xv, Zv = _ground_xz(v, f, cx)
         d_real = math.hypot(Xp - Xv, Zp - Zv)          # metres, depth-aware
@@ -109,8 +115,18 @@ def hit_probability(ped, vehicles, fps=30.0, frame_w=1280.0):
         r = prox * path * (0.75 + 0.25 * ttc_boost)
         if d_real < 3.5 and align > 0.6:                   # a car bearing down within ~3.5 m
             r = max(r, 0.72 + 0.25 * path)
-        best = max(best, r)
-    return float(np.clip(best, 0, 1))
+        if r > best:
+            best = r
+            best_detail = {
+                "driver_id": v.get("id"), "driver_cls": v.get("cls", "vehicle"),
+                "d_real": d_real, "align": align, "prox": prox, "path": path,
+                "ttc_boost": ttc_boost, "closing_ms": max(closing_ms, 0.0),
+                "veh_speed": v_speed,
+            }
+    best = float(np.clip(best, 0, 1))
+    if explain:
+        return best, best_detail
+    return best
 
 
 def draw(frame, peds, vehicles):
@@ -132,7 +148,7 @@ def draw(frame, peds, vehicles):
     return frame
 
 
-def process(video, start=0, count=250, out_w=960, out_mp4=None, json_out=None):
+def process(video, start=0, count=250, out_w=960, out_mp4=None, json_out=None, redact=True):
     yolo = YoloOnnx()
     tracker = ByteTracker(high_thresh=0.5, low_thresh=0.25, n_init=2, max_age=30)
     cap = cv2.VideoCapture(str(video))
@@ -140,6 +156,8 @@ def process(video, start=0, count=250, out_w=960, out_mp4=None, json_out=None):
     cap.set(cv2.CAP_PROP_POS_FRAMES, start)
     writer, per_frame, n = None, [], 0
     risk_ema = {}                                     # track_id -> smoothed risk
+    history = {}                                      # track_id -> detection provenance
+    peak = {"risk": -1.0}                             # highest-risk instant, for lineage
     keep = {"person", "bicycle"} | VEHICLE_CLASSES
     for k in range(count):
         ok, frame = cap.read()
@@ -157,15 +175,20 @@ def process(video, start=0, count=250, out_w=960, out_mp4=None, json_out=None):
             item = {"id": t.track_id, "cls": t.cls, "box": [b.x1, b.y1, b.x2, b.y2],
                     "vx": vx, "vy": vy, "speed": round(math.hypot(vx, vy), 2)}
             (peds if t.cls in ("person", "bicycle") else vehicles).append(item)
+            hp = history.setdefault(t.track_id, {"cls": t.cls, "conf": [], "first": k, "last": k})
+            hp["conf"].append(round(float(t.score), 3)); hp["last"] = k
         frame_w = frame.shape[1]
         for p in peds:
-            r = hit_probability(p, vehicles, fps=fps, frame_w=frame_w)
+            r, detail = hit_probability(p, vehicles, fps=fps, frame_w=frame_w, explain=True)
             prev = risk_ema.get(p["id"], r)
             r = 0.6 * prev + 0.4 * r                  # temporal smoothing
             risk_ema[p["id"]] = r
             p["risk"] = round(r, 3)
-        if out_w:
-            pass
+            if r > peak["risk"]:                      # remember the derivation of the peak score
+                peak = {"risk": r, "frame": k, "ped_id": p["id"], "detail": detail}
+        # De-identify (faces + plates) BEFORE anything is written, then draw the safety overlay.
+        if redact:
+            redact_frame(frame, peds, vehicles)
         draw(frame, peds, vehicles)
         if out_w:
             h = int(frame.shape[0] * out_w / frame.shape[1])
@@ -188,7 +211,17 @@ def process(video, start=0, count=250, out_w=960, out_mp4=None, json_out=None):
             print(f"  {n}/{count}", flush=True)
     if writer:
         writer.release()
-    meta = {"fps": fps, "n_frames": n, "frames": per_frame}
+    # Lineage for the peak-risk instant: bind the score to its detections, track, and vehicle.
+    lineage = None
+    if peak.get("detail"):
+        lineage = trace_risk(
+            peak["ped_id"], peak["detail"].get("driver_id"), peak["risk"], peak["frame"],
+            {k: peak["detail"][k] for k in ("d_real", "align", "prox", "path", "ttc_boost",
+                                            "closing_ms", "veh_speed")},
+            history, note="peak-risk instant of the clip",
+        ).as_dict()
+    meta = {"fps": fps, "n_frames": n, "frames": per_frame, "lineage": lineage,
+            "redacted": bool(redact)}
     if json_out:
         Path(json_out).write_text(json.dumps(meta))
     return meta
