@@ -1,0 +1,15 @@
+{
+  "risk_auroc_learned": 0.9508244247127227,
+  "risk_auroc_ttc_motion": 0.868264834091056,
+  "risk_auprc_learned": 0.3626864342730824,
+  "risk_ece_learned": 0.0018814531354928643,
+  "risk_ece_physics": 0.36806385263564584,
+  "intention_auroc": 0.9605160918400619,
+  "intention_lead_time_s": 2.76,
+  "detection_f1": 0.952,
+  "tracking_mota": 0.745,
+  "tracking_idf1": 0.7016,
+  "trajectory_minADE_m": 0.8307,
+  "trajectory_minFDE_m": 1.2687,
+  "elapsed_s": 152.8
+}
