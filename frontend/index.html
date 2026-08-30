@@ -278,15 +278,17 @@ fetch('/media/lineage.json').then(r=>r.json()).then(renderTrace).catch(()=>{docu
 
 /* ---- Monitor: calibration + live input drift ---- */
 const BAND={stable:SAFE,moderate:'#ffcc00',drift:DANGER};
+function ksBand(k){return k<0.1?'stable':k<0.3?'moderate':'drift';}
 function driftBars(feeds){
-  const W=560,rowH=34,H=feeds.length*rowH+34,L=150,R=44,svg=E('svg',{viewBox:`0 0 ${W} ${H}`});
-  const xmax=Math.max(0.5,...feeds.map(f=>f.psi));const px=v=>L+(W-L-R)*v/xmax;
-  [0.1,0.25].forEach(t=>{svg.appendChild(E('line',{x1:px(t),y1:6,x2:px(t),y2:H-24,stroke:INK3,'stroke-width':1,'stroke-dasharray':'3 4'}));
-    svg.appendChild(TX(px(t),H-10,t,{fill:INK3,'font-size':10.5,'text-anchor':'middle'}));});
-  feeds.forEach((f,i)=>{const cy=18+rowH*i;
+  feeds=feeds.slice().sort((a,b)=>b.ks-a.ks);
+  const W=560,rowH=34,H=feeds.length*rowH+30,L=158,R=50,svg=E('svg',{viewBox:`0 0 ${W} ${H}`});
+  const px=v=>L+(W-L-R)*Math.min(1,v);            // KS is bounded 0..1
+  [0,0.5,1].forEach(t=>{svg.appendChild(E('line',{x1:px(t),y1:6,x2:px(t),y2:H-22,stroke:GRID,'stroke-width':1}));
+    svg.appendChild(TX(px(t),H-8,t.toFixed(1),{fill:INK3,'font-size':10.5,'text-anchor':'middle'}));});
+  feeds.forEach((f,i)=>{const cy=16+rowH*i,b=ksBand(f.ks);
     svg.appendChild(TX(L-10,cy+13,f.feed,{fill:INK2,'font-size':12,'text-anchor':'end'}));
-    svg.appendChild(E('rect',{x:L,y:cy+4,width:Math.max(2,px(f.psi)-L),height:16,rx:4,fill:BAND[f.band]||SLATE}));
-    svg.appendChild(TX(px(f.psi)+8,cy+16,f.psi.toFixed(2),{fill:INK2,'font-size':11.5,'font-weight':600}));});
+    svg.appendChild(E('rect',{x:L,y:cy+4,width:Math.max(2,px(f.ks)-L),height:16,rx:4,fill:BAND[b]||SLATE}));
+    svg.appendChild(TX(px(f.ks)+8,cy+16,f.ks.toFixed(2),{fill:INK2,'font-size':11.5,'font-weight':600}));});
   document.getElementById('mon_drift').appendChild(svg);
   const lg=document.createElement('div');lg.className='mlgd';
   lg.innerHTML=Object.entries(BAND).map(([k,v])=>`<span><i style="background:${v}"></i>${k}</span>`).join('');
