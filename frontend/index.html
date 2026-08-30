@@ -28,8 +28,8 @@
   /* videos */
   .videos{display:grid;grid-template-columns:1fr 1fr;gap:22px}
   figure{margin:0}
-  .stage{position:relative;border-radius:18px;overflow:hidden;background:#000;box-shadow:var(--shadow-lg)}
-  video{display:block;width:100%;height:auto}
+  .stage{position:relative;border-radius:18px;overflow:hidden;background:#000;box-shadow:var(--shadow-lg);aspect-ratio:16/9}
+  video{display:block;width:100%;height:100%;object-fit:cover}
   .hud{position:absolute;top:12px;left:12px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.86);
     border-radius:980px;padding:6px 13px;backdrop-filter:blur(14px) saturate(1.5);-webkit-backdrop-filter:blur(14px) saturate(1.5);
     box-shadow:0 1px 5px rgba(0,0,0,.14);font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
@@ -153,7 +153,7 @@ function selectTab(name){document.querySelectorAll('.tab').forEach(x=>x.classLis
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>selectTab(t.dataset.tab));
 if(location.hash.slice(1))selectTab(location.hash.slice(1));
 
-const IDS=[1,2,3,4];
+const IDS=[1,2,3,4,5,6];
 const vwrap=document.getElementById('videos');
 IDS.forEach(id=>{const fig=document.createElement('figure');
   fig.innerHTML=`<div class="stage">
@@ -223,18 +223,19 @@ function caps(sum,capm){
     ['Crossing intent AUROC',(sum.intention_auroc||0.96)],['Near-miss AUROC',(sum.risk_auroc_learned||0.95)]];
   document.getElementById('caps').innerHTML=rows.map(([l,v])=>
     `<div class="cap-row"><div class="top"><span>${l}</span><b>${v.toFixed(2)}</b></div><div class="track"><i style="width:${Math.round(v*100)}%"></i></div></div>`).join('');}
-function histogram(frames){
-  const bins=new Array(10).fill(0);frames.forEach(cl=>cl.forEach(f=>{bins[Math.min(9,Math.floor(f[2]/10))]++;}));
+function histogram(bins){
   const W=1000,H=190,L=44,R=14,Tp=8,B=30,n=bins.length,max=Math.max(...bins,1);const svg=E('svg',{viewBox:`0 0 ${W} ${H}`});
   const bw=(W-L-R)/n,y=v=>Tp+(H-Tp-B)*(1-v/max);
   [0,.5,1].forEach(g=>{const yy=Tp+(H-Tp-B)*(1-g);svg.appendChild(E('line',{x1:L,y1:yy,x2:W-R,y2:yy,stroke:GRID,'stroke-width':1}));
-    svg.appendChild(TX(L-8,yy+4,Math.round(g*max).toLocaleString(),{fill:INK3,'font-size':11,'text-anchor':'end'}));});
+    svg.appendChild(TX(L-8,yy+4,String(Math.round(g*max)),{fill:INK3,'font-size':11,'text-anchor':'end'}));});
   bins.forEach((c,i)=>{const xx=L+bw*i+3;const r=E('rect',{x:xx,y:y(c),width:bw-6,height:Math.max(1,(H-Tp-B)-(y(c)-Tp)),rx:4,fill:riskColor((i+0.5)/10)});
-    r.appendChild(E('title'));r.lastChild.textContent=`${i*10}-${i*10+10}% ${c.toLocaleString()} frames`;svg.appendChild(r);
+    r.appendChild(E('title'));r.lastChild.textContent=`${i*10} to ${i*10+10}% ${c} frames`;svg.appendChild(r);
     svg.appendChild(TX(xx+(bw-6)/2,H-B+16,`${i*10}`,{fill:INK3,'font-size':10.5,'text-anchor':'middle'}));});
   svg.appendChild(TX(W/2,H-4,'risk %',{fill:INK3,'font-size':11,'text-anchor':'middle'}));
   document.getElementById('hist').appendChild(svg);}
-let histDone=false;function maybeHist(){if(!histDone&&allCounts.length>=IDS.length){histDone=true;histogram(allCounts);}}
+function maybeHist(){}   // histogram now comes from the baked corpus file below
+fetch('/media/risk_hist.json').then(r=>r.json()).then(h=>histogram(h.bins))
+  .catch(()=>{const b=new Array(10).fill(0);allCounts.forEach(cl=>cl.forEach(f=>b[Math.min(9,Math.floor(f[2]/10))]++));histogram(b);});
 
 const fbTable={distance:{auroc:.833,auprc:.146},ttc:{auroc:.767,auprc:.134},'ttc+motion':{auroc:.868,auprc:.162},physics:{auroc:.885,auprc:.275},learned:{auroc:.951,auprc:.362}};
 const fbSum={intention_auroc:.961,risk_auroc_learned:.951};
