@@ -25,13 +25,15 @@ MEDIA.mkdir(parents=True, exist_ok=True)
 # The first LIVE_N are the close-call clips shown on the Live tab; the rest are calm scenes
 # processed only so the "collision risk is rare" histogram reflects a representative corpus.
 LIVE_N = 6
+# The Live windows are trimmed tight around each clip's car-almost-hits moment so the near
+# miss is what plays, not a long calm lead-in (the peak sits ~0.8 s into each window).
 ENVS = [
-    ("yt_mE44pLMpfkw.mp4", 1727, 78, "Mid-block crossing", "a pedestrian crosses in front of a moving car"),
-    ("crossing_street.mp4", 344, 96, "Dusk city crossing", "a busy city crossing at dusk"),
-    ("c_36306846.mp4", 120, 250, "Downtown crosswalk", "a downtown crosswalk on a bright day"),
-    ("c_14365420.mp4", 60, 70, "Street corner", "a car swings past people on a corner"),
-    ("cross_a.mp4", 12, 66, "Crossing signal", "a pedestrian steps off as a car crosses"),
-    ("c_34952428.mp4", 268, 82, "Marked crosswalk", "a truck rolls through a crowded crosswalk"),
+    ("yt_mE44pLMpfkw.mp4", 1726, 58, "Mid-block crossing", "a pedestrian crosses in front of a moving car"),
+    ("crossing_street.mp4", 399, 56, "Dusk city crossing", "a car closes on a pedestrian at dusk"),
+    ("c_36306846.mp4", 244, 60, "Downtown crosswalk", "a rider bears down on people at a crosswalk"),
+    ("c_14365420.mp4", 104, 56, "Street corner", "a car swings past people on a corner"),
+    ("cross_a.mp4", 21, 58, "Crossing signal", "a pedestrian steps off as a car crosses"),
+    ("c_34952428.mp4", 285, 56, "Marked crosswalk", "a truck rolls through a crowded crosswalk"),
     ("c_20221532.mp4", 300, 250, "Busy avenue", "a wide avenue thick with cars and people"),
     ("c_3552510.mp4", 60, 70, "Pedestrian street", "a lively pedestrian street"),
     ("c_3894943.mp4", 20, 70, "Shared street", "a narrow shared street of walkers and cars"),
