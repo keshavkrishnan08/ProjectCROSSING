@@ -3,6 +3,8 @@
 **Pedestrian safety intelligence. It turns ordinary street video into a live read on who is
 about to be hit.**
 
+![CROSSING scoring every pedestrian and vehicle on real street video by their probability of being hit](docs/preview.jpg)
+
 A street is not a pile of objects. It is a constantly changing set of interactions between
 people and vehicles. CROSSING models that. Object detection is just the sensor. On top of it
 the system tracks every person and every vehicle, recovers how far apart they really are in
