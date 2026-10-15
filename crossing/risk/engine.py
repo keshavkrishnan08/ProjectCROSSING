@@ -1,13 +1,13 @@
-"""Risk scoring — from conflict geometry to a calibrated 0-100 danger score.
+"""Risk scoring, from conflict geometry to a calibrated 0-100 danger score.
 
 Two models, one interface:
 
-* **PhysicsRisk** — a transparent logistic fusion of danger-aligned factors (low TTC,
+* **PhysicsRisk** a transparent logistic fusion of danger-aligned factors (low TTC,
   small miss distance, path overlap, closing speed, crossing intention, vehicle speed,
   permissive turn, inattention, braking relief). Because the score is a weighted sum, the
   same computation yields the **explanation** for free: each factor's share of the score
   (the "Low TTC +38 / Trajectory intersection +27 / ..." decomposition).
-* **LearnedRisk** — a gradient-boosted model (scikit-learn ``HistGradientBoosting``, or
+* **LearnedRisk** a gradient-boosted model (scikit-learn ``HistGradientBoosting``, or
   xgboost/lightgbm if installed) trained on the operational near-miss label and probability-
   calibrated. Used when a model file is present; otherwise the physics model drives risk.
 
@@ -126,7 +126,7 @@ class LearnedRisk:
         return float(self.proba_batch([features])[0])
 
     def proba_batch(self, feature_dicts) -> np.ndarray:
-        """Score many interactions in one model call — essential for pipeline throughput
+        """Score many interactions in one model call, essential for pipeline throughput
         (sklearn's per-call overhead makes one-at-a-time scoring ~10x slower)."""
         if not feature_dicts:
             return np.zeros(0)

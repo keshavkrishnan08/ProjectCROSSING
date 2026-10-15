@@ -2,8 +2,8 @@
 
 Trains the from-scratch NumPy GRU (:mod:`crossing.ml.nn`) to answer, from the last ~1.5 s
 of behaviour, "will this pedestrian step into the road within the next second?" Reports
-AUROC / F1 / accuracy / ECE on unseen test scenes, plus the **mean lead time** — how early
-before road entry the probability first crosses 0.5 — which is the metric that matters for
+AUROC / F1 / accuracy / ECE on unseen test scenes, plus the **mean lead time** how early
+before road entry the probability first crosses 0.5, which is the metric that matters for
 warning drivers in time.
 """
 from __future__ import annotations

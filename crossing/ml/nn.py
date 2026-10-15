@@ -1,8 +1,8 @@
 """A small, correct, from-scratch neural-network library in NumPy.
 
 CROSSING's temporal models (crossing-intention, learned trajectory refinement) are genuine
-sequence networks — a **GRU with full back-propagation-through-time** and an Adam optimiser
-— implemented here without any deep-learning framework, so the whole platform trains and
+sequence networks, a **GRU with full back-propagation-through-time** and an Adam optimiser
+, implemented here without any deep-learning framework, so the whole platform trains and
 runs on the confirmed NumPy/scikit-learn stack. If ``torch`` is available it can be swapped
 in, but nothing depends on it.
 

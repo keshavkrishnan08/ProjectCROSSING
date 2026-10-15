@@ -175,7 +175,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:n
   <div class="stage" id="stage">
     <div class="panels">
       <div class="pane" id="pane-cam">
-        <div class="cap">CAMERA · <b id="cam-count">—</b></div>
+        <div class="cap">CAMERA · <b id="cam-count">-</b></div>
         <canvas id="cam"></canvas>
         <div class="leg">
           <span><i style="background:var(--person)"></i>person</span>
@@ -190,22 +190,22 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:n
       </div>
     </div>
 
-    <div class="chapter"><b id="ch-idx">01</b> / <span id="ch-total">12</span> · <span id="ch-name">—</span></div>
+    <div class="chapter"><b id="ch-idx">01</b> / <span id="ch-total">12</span> · <span id="ch-name">-</span></div>
     <div class="flash" id="flash"></div>
     <div class="nm-badge" id="nmbadge">⚠ NEAR MISS</div>
 
-    <div class="float decomp" id="decomp"><div class="ft">Why — risk decomposition</div><div id="decomp-rows"></div></div>
+    <div class="float decomp" id="decomp"><div class="ft">Why, risk decomposition</div><div id="decomp-rows"></div></div>
     <div class="float cf" id="cf"><div class="ft">Counterfactual</div>
       <div class="big"><span id="cf-title">Vehicle 5 mph slower</span></div>
       <div class="track"><i id="cf-knob"></i></div>
-      <div class="rr"><span>miss <b id="cf-miss">—</b> m</span><span>risk <b id="cf-risk">—</b></span></div>
+      <div class="rr"><span>miss <b id="cf-miss">-</b> m</span><span>risk <b id="cf-risk">-</b></span></div>
       <div class="mono" id="cf-verdict" style="font-size:12px;margin-top:8px;color:var(--r-low)"></div>
     </div>
 
     <div class="proof" id="proof"></div>
     <div class="endcard" id="endcard">
       <div class="big">CROSSING</div>
-      <div class="tl">From street video to an operational model of pedestrian safety — every person, vehicle, interaction and near-miss, predicted before it happens.</div>
+      <div class="tl">From street video to an operational model of pedestrian safety, every person, vehicle, interaction and near-miss, predicted before it happens.</div>
       <button class="replay" id="replay">↻ replay</button>
     </div>
 
@@ -242,13 +242,13 @@ const S={data:null,H:null,Hinv:null,fi:0,playing:true,t:0,last:0,dur:0,beats:[],
 async function boot(){
   let d=window.CROSSING_DATA;
   if(!d){try{d=await(await fetch('/api/demo')).json();}catch(e){d=null;}}
-  if(!d){document.getElementById('loading').innerHTML='<div class="disp" style="font-size:14px">no data — run <code>crossing demo</code></div>';return;}
+  if(!d){document.getElementById('loading').innerHTML='<div class="disp" style="font-size:14px">no data, run <code>crossing demo</code></div>';return;}
   S.data=d;S.H=d.scene.homography;S.Hinv=matInv3(S.H);
   document.getElementById('scene-name').textContent='LIVE · '+d.scene.name.replace('intersection_seed','SEED ').toUpperCase();
   buildBeats();buildChapters();setupUI();
   S.mapView=fullMapView();
   document.getElementById('loading').style.display='none';
-  // deterministic seek/theme hooks (e.g. #t=23.5&dark) — used for previews/screenshots
+  // deterministic seek/theme hooks (e.g. #t=23.5&dark): used for previews/screenshots
   if(/dark/.test(location.hash))document.documentElement.setAttribute('data-theme','dark');
   else if(/light/.test(location.hash))document.documentElement.setAttribute('data-theme','light');
   const mh=location.hash.match(/t=([\d.]+)/);
@@ -276,11 +276,11 @@ function buildBeats(){
   const ip=findIntentionPed()||{id:hero&&hero.a_id,t0:hp-6,t1:hp-2.5};
   // count entity classes in an early frame for the perception beat
   const B=[];
-  B.push({name:'Title',dur:2.6,mode:'title',callout:['CROSSING','A street is a network of interactions — modelled in real time']});
+  B.push({name:'Title',dur:2.6,mode:'title',callout:['CROSSING','A street is a network of interactions, modelled in real time']});
   B.push({name:'Perception',dur:4.4,mode:'scene',from:1.0,to:5.2,emph:'cam',fx:{count:1},
           callout:['Every actor, detected','person · vehicle · cyclist · crosswalk · signal']});
   B.push({name:'Tracking',dur:4.0,mode:'scene',from:5.2,to:9.2,emph:'cam',
-          callout:['Persistent identities','IDs survive occlusion — trajectories, not boxes']});
+          callout:['Persistent identities','IDs survive occlusion, trajectories, not boxes']});
   B.push({name:'World model',dur:3.6,mode:'scene',from:9.2,to:Math.min(12.8,hp-7),emph:'map',
           callout:['Pixels → ground truth','position · velocity · heading, in metres']});
   B.push({name:'Intention',dur:4.6,mode:'scene',from:Math.max(0.5,ip.t0-0.4),to:ip.t1+0.6,emph:'map',focusEnt:ip.id,fx:{ring:1},
@@ -520,7 +520,7 @@ function renderProof(prog){
     {n:(sm.intention_lead_time_s||0),f:v=>v.toFixed(1)+'s',l:'Crossing warning',d:'before road entry'},
     {n:(risk.ece||sm.risk_ece_learned||0),f:v=>v.toFixed(3),l:'Calibration error',d:'risk means what it says'},
   ];
-  if(!el.dataset.built){el.innerHTML=cards.map((c,i)=>`<div class="stat"><div class="n" id="stat${i}">—</div><div class="l">${c.l}</div><div class="d">${c.d}</div></div>`).join('');el.dataset.built='1';}
+  if(!el.dataset.built){el.innerHTML=cards.map((c,i)=>`<div class="stat"><div class="n" id="stat${i}">-</div><div class="l">${c.l}</div><div class="d">${c.d}</div></div>`).join('');el.dataset.built='1';}
   cards.forEach((c,i)=>{const v=c.n*ease(clamp(prog*1.5,0,1));document.getElementById('stat'+i).textContent=c.f(v);});
 }
 

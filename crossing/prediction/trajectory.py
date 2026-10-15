@@ -6,8 +6,8 @@ CROSSING predicts several futures per entity, each a sequence of ``[t, x, y]`` w
 with growing positional uncertainty, and weights them by the current kinematics and the
 estimated crossing intention.
 
-* **Pedestrians** get up to three goal-conditioned modes — *continue*, *stop*, *turn back*
-  — whose probabilities are driven by intention, motion, and signal context.
+* **Pedestrians** get up to three goal-conditioned modes, *continue*, *stop*, *turn back*
+, whose probabilities are driven by intention, motion, and signal context.
 * **Vehicles** get a dominant kinematic mode (constant-acceleration along the lane) plus a
   braking mode when a conflict is developing.
 

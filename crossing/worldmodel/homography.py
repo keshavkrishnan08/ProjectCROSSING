@@ -8,10 +8,10 @@ point onto the road plane with a homography.
 
 This module provides:
 
-* :class:`Homography` — a 3x3 projective map with forward/inverse application and a
+* :class:`Homography`: a 3x3 projective map with forward/inverse application and a
   Direct-Linear-Transform estimator (``fit``) from >=4 correspondences, exactly how you
   would calibrate a real fixed camera from lane-marking / crosswalk corners.
-* :func:`synthetic_camera_homography` — build a physically-correct ground->image
+* :func:`synthetic_camera_homography`: build a physically-correct ground->image
   homography from a pinhole camera (height, pitch, focal length). The simulator uses this
   to render, and the pipeline re-estimates it from known scene points, closing the loop.
 """

@@ -1,6 +1,6 @@
 """The unified data model for CROSSING.
 
-A street is *not* a bag of bounding boxes — it is a network of entities whose states
+A street is *not* a bag of bounding boxes, it is a network of entities whose states
 and relationships evolve over time. This module is the single vocabulary every stage
 speaks: perception fills :class:`Detection`, tracking promotes them to :class:`Track`,
 the world model resolves :class:`Person` / :class:`Vehicle` states in ground metres,
@@ -19,7 +19,7 @@ from typing import Optional
 
 
 # ======================================================================================
-# Enumerations — the discrete state vocabularies
+# Enumerations: the discrete state vocabularies
 # ======================================================================================
 class EntityKind(str, Enum):
     PERSON = "person"
@@ -121,7 +121,7 @@ class BBox:
 
     @property
     def foot(self) -> tuple[float, float]:
-        """Bottom-centre — the ground-contact point projected by the homography."""
+        """Bottom-centre, the ground-contact point projected by the homography."""
         return (self.cx, self.y2)
 
     def to_list(self) -> list[float]:
@@ -195,7 +195,7 @@ class EntityState:
     t: float                       # seconds
     # image space (for overlay rendering)
     bbox: Optional[BBox] = None
-    # ground space (metres) — the physics frame
+    # ground space (metres): the physics frame
     position: Vec2 = field(default_factory=Vec2)
     velocity: Vec2 = field(default_factory=Vec2)
     acceleration: Vec2 = field(default_factory=Vec2)
@@ -419,7 +419,7 @@ class RiskEvent:
 
 
 # ======================================================================================
-# Infrastructure (static context) — changes what a given kinematic state *means*
+# Infrastructure (static context): changes what a given kinematic state *means*
 # ======================================================================================
 @dataclass
 class Crosswalk:

@@ -2,10 +2,10 @@
 
 Each capability is measured with its standard metric, on scenes the models never trained on:
 
-* **detection** — precision / recall (via the simulator's ``gt_id`` back-reference).
-* **tracking** — MOTA, IDF1, ID switches, fragmentation (real :class:`ByteTracker`).
-* **trajectory** — minADE / minFDE / miss-rate over the multi-modal predictor.
-* **intention** — lead time: how early P(cross) crosses 0.5 before road entry.
+* **detection** precision / recall (via the simulator's ``gt_id`` back-reference).
+* **tracking** MOTA, IDF1, ID switches, fragmentation (real :class:`ByteTracker`).
+* **trajectory** minADE / minFDE / miss-rate over the multi-modal predictor.
+* **intention** lead time: how early P(cross) crosses 0.5 before road entry.
 
 The risk benchmark lives in :mod:`crossing.ml.train_risk`; this module covers the rest.
 """

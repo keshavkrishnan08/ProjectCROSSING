@@ -1,4 +1,4 @@
-"""The interaction engine — pair up entities and quantify every relationship.
+"""The interaction engine, pair up entities and quantify every relationship.
 
 Each frame, every vulnerable road user (pedestrian, cyclist) within a gating distance of a
 vehicle becomes a candidate :class:`Interaction`. The engine computes the full conflict

@@ -1,4 +1,4 @@
-"""Dataset construction for the learned models — with leakage-free, by-scene splits.
+"""Dataset construction for the learned models, with leakage-free, by-scene splits.
 
 The cardinal sin in trajectory/intention work is splitting individual frames randomly, so
 the same pedestrian appears in train and test. CROSSING never does that: each simulated
@@ -8,9 +8,9 @@ Two datasets are built, both with **features from the reconstructed pipeline** (
 -> tracking -> world model, exactly what runs at inference) and **labels from ground
 truth** (aligned via each track's ``gt_id``):
 
-* **intention** — per-pedestrian temporal sequences; label = does the pedestrian enter the
+* **intention** per-pedestrian temporal sequences; label = does the pedestrian enter the
   roadway within the next second? (an *early* prediction task, not hindsight).
-* **risk** — per-interaction feature vectors; label = does this pair reach a genuine
+* **risk** per-interaction feature vectors; label = does this pair reach a genuine
   near-miss within the next ~2.5 s? (a near-miss *precursor* label).
 """
 from __future__ import annotations

@@ -1,16 +1,16 @@
-"""Perception — the sensor layer.
+"""Perception, the sensor layer.
 
 The object detector is *just the sensor*; the intelligence is everything downstream. This
 module defines a small :class:`Detector` interface so the rest of CROSSING is agnostic to
 where boxes come from:
 
-* :class:`ReplayDetector` — serves pre-computed detections (the simulator's rendered
+* :class:`ReplayDetector`: serves pre-computed detections (the simulator's rendered
   boxes, or imported PIE/JAAD annotations). Used everywhere by default.
-* :class:`YoloDetector` — runs a real Ultralytics YOLO model on a video, mapping COCO
+* :class:`YoloDetector`: runs a real Ultralytics YOLO model on a video, mapping COCO
   classes into CROSSING's taxonomy. Auto-used when ``ultralytics`` + a video are present;
   otherwise the platform runs perfectly on replayed detections.
 
-Swapping the sensor changes nothing downstream — that is the whole point.
+Swapping the sensor changes nothing downstream, that is the whole point.
 """
 from __future__ import annotations
 

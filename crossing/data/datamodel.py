@@ -1,4 +1,4 @@
-"""The operational event database — CROSSING's structured memory.
+"""The operational event database, CROSSING's structured memory.
 
 Everything the pipeline infers is persisted into a normalised SQLite schema so the platform
 becomes an *event intelligence system* you can query, not a one-shot script:
@@ -148,7 +148,7 @@ class EventDatabase:
 
         Confirmed / false-positive / missed labels accumulate here; ``export_feedback``
         turns them into supervised targets that a periodic retraining job folds back into
-        the risk model — SYSTEM alert -> human verdict -> new label -> improved model.
+        the risk model, SYSTEM alert -> human verdict -> new label -> improved model.
         """
         cur = self.conn.execute(
             "INSERT INTO human_labels(scene_id,event_id,verdict,reason,reviewer,created_at) "
@@ -158,7 +158,7 @@ class EventDatabase:
         return cur.lastrowid
 
     def export_feedback(self) -> list[dict]:
-        """Human labels joined to their event features — ready to retrain on."""
+        """Human labels joined to their event features, ready to retrain on."""
         rows = self.conn.execute(
             "SELECT h.verdict, h.reason, e.* FROM human_labels h "
             "JOIN events e ON e.scene_id=h.scene_id AND e.event_id=h.event_id").fetchall()

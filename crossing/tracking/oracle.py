@@ -1,6 +1,6 @@
 """Assisted (oracle) tracker for annotated / simulated data.
 
-Multi-object tracking on crowded, heavily-occluded street scenes fragments — that is a
+Multi-object tracking on crowded, heavily-occluded street scenes fragments, that is a
 real property of the problem, and CROSSING measures it honestly with :class:`ByteTracker`
 in the evaluation suite (MOTA / IDF1 / fragmentation).
 
@@ -13,7 +13,7 @@ identities persistent, while still:
 * honouring detection gaps/occlusion (a missing detection = a coasting, un-updated track),
 * dropping false positives (``gt_id is None``).
 
-So trajectories still look like tracker output — smoothed, with realistic gaps — just
+So trajectories still look like tracker output, smoothed, with realistic gaps, just
 without spurious ID switches. This is the mode the live demo and the risk analytics use;
 it mirrors deploying a strong tracker or working from labelled footage.
 """

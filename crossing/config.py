@@ -2,8 +2,8 @@
 
 Coordinate systems
 ------------------
-* **image space** — pixels, origin top-left, +x right, +y down. Raw detector output.
-* **ground space** — metres on the road plane (a bird's-eye "digital twin"), origin at
+* **image space** pixels, origin top-left, +x right, +y down. Raw detector output.
+* **ground space** metres on the road plane (a bird's-eye "digital twin"), origin at
   the scene's reference point, +x East, +y North. All physics (velocity, TTC, risk) is
   computed here after homography. Headings are radians, ``atan2(vy, vx)``, 0 = +x (East).
 
@@ -74,7 +74,7 @@ HORIZONS = Horizons()
 
 
 # --------------------------------------------------------------------------------------
-# Risk thresholds — deliberately conservative and *documented* rather than magic numbers.
+# Risk thresholds: deliberately conservative and *documented* rather than magic numbers.
 # These define the operational near-miss label; the learned model is calibrated against it.
 # --------------------------------------------------------------------------------------
 @dataclass(frozen=True)
@@ -84,7 +84,7 @@ class RiskConfig:
     ttc_high: float = 2.0
     ttc_warn: float = 4.0
 
-    # Distance at closest point of approach (m) — how near the paths actually come.
+    # Distance at closest point of approach (m): how near the paths actually come.
     dcpa_critical: float = 0.8
     dcpa_high: float = 1.5
     dcpa_warn: float = 3.0

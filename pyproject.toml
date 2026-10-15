@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "crossing"
 version = "0.1.0"
-description = "CROSSING — a real-time pedestrian-vehicle safety intelligence platform"
+description = "CROSSING, a real-time pedestrian-vehicle safety intelligence platform"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }

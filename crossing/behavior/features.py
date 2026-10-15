@@ -19,7 +19,7 @@ head_align             alignment of heading with the crossing axis (cos, -1..1)
 gaze                   pose gaze cue toward traffic (-1..1; 0 if no pose)
 ped_walk               pedestrian signal: +1 WALK, -1 DONT_WALK, 0 flashing/unknown
 veh_dist               distance to nearest approaching vehicle (m, clipped)
-veh_ttc                inverse TTC to nearest vehicle (1/s, clipped) — bigger = more urgent
+veh_ttc                inverse TTC to nearest vehicle (1/s, clipped), bigger = more urgent
 veh_speed              speed of nearest vehicle (m/s)
 =====================  ==================================================================
 """

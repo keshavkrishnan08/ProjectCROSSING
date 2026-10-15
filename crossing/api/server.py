@@ -59,7 +59,7 @@ def dashboard():
 def demo():
     d = _load_demo()
     if d is None:
-        raise HTTPException(404, "demo bundle not built — run `crossing demo`")
+        raise HTTPException(404, "demo bundle not built, run `crossing demo`")
     return JSONResponse(d)
 
 
@@ -147,7 +147,7 @@ def require(scope: str, resource: str):
 def _media_json(name: str):
     p = _MEDIA / name
     if not p.exists():
-        raise HTTPException(404, f"{name} not built yet — run `python -m scripts.build_gallery`")
+        raise HTTPException(404, f"{name} not built yet, run `python -m scripts.build_gallery`")
     return JSONResponse(json.loads(p.read_text()))
 
 

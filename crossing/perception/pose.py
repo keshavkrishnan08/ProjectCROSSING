@@ -1,14 +1,14 @@
 """Pose-derived cues for pedestrians.
 
-Detecting *where* a person is is not enough; safety depends on what they are *doing* —
+Detecting *where* a person is is not enough; safety depends on what they are *doing* 
 walking vs standing vs turning, and crucially whether they are **looking at traffic**. A
 pedestrian scanning the road before stepping off behaves very differently from a
 head-down phone user. This module turns keypoints (from YOLO-Pose, or the simulator's
 synthetic skeleton) into two scalar cues consumed by the behaviour model:
 
-* ``gaze_lateral`` — signed head offset relative to the shoulders (a proxy for whether the
+* ``gaze_lateral``: signed head offset relative to the shoulders (a proxy for whether the
   head is turned toward oncoming traffic);
-* ``upright`` / ``stance`` — coarse body configuration.
+* ``upright`` / ``stance``: coarse body configuration.
 
 Keypoint order follows the simulator/COCO-lite convention:
 ``[nose, L-shoulder, R-shoulder, L-hip, R-hip]``.

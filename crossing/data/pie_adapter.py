@@ -9,7 +9,7 @@ and synchronised ego speed/GPS/heading. JAAD is a complementary benchmark.
 Because PIE is *ego-view* (a moving dashcam) rather than a fixed camera, the image->ground
 homography changes per frame; :meth:`PIEAdapter.homography_for_frame` exposes that hook
 (estimated from the road plane / vanishing point, or from ego motion + a flat-ground
-assumption). Everything downstream — tracking, world model, intention, interaction, risk —
+assumption). Everything downstream, tracking, world model, intention, interaction, risk,
 is identical to the simulated path, because it all speaks the same :mod:`crossing.schema`.
 
 Expected on-disk layout (the official PIE devkit's):

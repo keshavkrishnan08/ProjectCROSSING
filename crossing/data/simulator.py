@@ -1,8 +1,8 @@
-"""A physically-grounded traffic micro-simulator — CROSSING's synthetic data engine.
+"""A physically-grounded traffic micro-simulator, CROSSING's synthetic data engine.
 
 Real footage (PIE/JAAD) plugs in through :mod:`crossing.data.pie_adapter`, but to develop,
 test, and *evaluate* the whole intelligence stack today we need scenes with known ground
-truth: exact trajectories, behaviours, crossing intentions, and — crucially — genuine
+truth: exact trajectories, behaviours, crossing intentions, and, crucially, genuine
 vehicle-pedestrian conflicts. This module generates them.
 
 What is modelled (all in ground metres, right-hand traffic like Toronto/PIE):
@@ -76,7 +76,7 @@ class SignalController:
     """Two-phase signal with yellow/all-red; exposes vehicle + pedestrian aspects.
 
     Phase A: EW vehicles GREEN, NS RED, N/S crosswalks WALK (peds cross the stopped NS road,
-             concurrent with — and thus conflicting with — permissive EW turns).
+             concurrent with, and thus conflicting with, permissive EW turns).
     Phase B: the mirror image.
     """
 
@@ -265,7 +265,7 @@ def _turn_arc(approach: str, dest: str) -> np.ndarray:
     """Smooth quadratic-Bezier quarter-turn from the entry box-edge to the exit box-edge.
 
     The control point is the corner where the entry lane's line meets the exit lane's line,
-    which yields a tight radius for right turns and a wide sweep for lefts — naturally.
+    which yields a tight radius for right turns and a wide sweep for lefts, naturally.
     """
     p0 = np.array(_ENTRY_BOX[approach], float)
     p1 = np.array(_EXIT_BOX[dest], float)
@@ -632,7 +632,7 @@ class TrafficSimulator:
         simultaneously, guaranteeing a tight approach.
 
         The conflict point is where the vehicle's *lane* path crosses the pedestrian's
-        crossing segment (start->goal) — not the crosswalk midline, which the vehicle
+        crossing segment (start->goal), not the crosswalk midline, which the vehicle
         never actually drives over."""
         cpt, s_star = _seg_path_closest(v.path, v.seg_len, p.start, p.goal)
         v.s = max(0.4, s_star - lead_m)
@@ -675,7 +675,7 @@ class TrafficSimulator:
             p.jaywalker = True; p.desired_speed = 1.3
             self._synchronize(v, p, lead_m=15.0)
             self.gt_conflicts.append(dict(t=t, kind=kind, veh=v.id, ped=p.id, cw=cwk))
-        else:  # occluded_emerge — distracted ped bolts into a fast non-yielding car's path,
+        else:  # occluded_emerge: distracted ped bolts into a fast non-yielding car's path,
                # with a large vehicle stopped nearby that intermittently occludes detection
             approach = self.rng.choice(["W", "E"])
             pathf, axisf = _vehicle_path(approach, "through")
@@ -723,7 +723,7 @@ class TrafficSimulator:
     def _render(self, frame, actors):
         """actors: list of dict(gt_id, cls, gx, gy, length, width, height, kind)."""
         cfg = self.cfg
-        # a fixed camera only sees its FOV — skip actors outside the visible ground region
+        # a fixed camera only sees its FOV: skip actors outside the visible ground region
         actors = [a for a in actors if self._in_frame(a["gx"], a["gy"])]
         # depth order: nearer to camera = larger image-y (bottom); occluders are nearer
         boxes = []

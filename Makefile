@@ -1,4 +1,4 @@
-# CROSSING — common workflows
+# CROSSING: common workflows
 .PHONY: install test train demo serve evaluate clean fmt
 
 install:

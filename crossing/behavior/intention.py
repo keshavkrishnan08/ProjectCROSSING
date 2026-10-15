@@ -1,14 +1,14 @@
 """Crossing-intention estimation and behaviour classification.
 
 The interesting scientific question in pedestrian safety is not *where is the person* but
-*will they step into the road — before they do it?* CROSSING answers it as a calibrated
+*will they step into the road: before they do it?* CROSSING answers it as a calibrated
 probability that evolves over time (0.21 -> 0.37 -> 0.68 -> 0.94), never a hard boolean.
 
 Two estimators share one interface:
 
 * a **heuristic** built from kinematics + context (distance to curb, motion toward the
-  road, signal state, gap to traffic) — always available, no training;
-* a **learned GRU** (``crossing.ml.nn``) over the last ~1.5 s of behavioural features —
+  road, signal state, gap to traffic), always available, no training;
+* a **learned GRU** (``crossing.ml.nn``) over the last ~1.5 s of behavioural features,
   trained on labelled crossings, and used when a model file is present.
 
 Both return ``(p_cross, std)``; uncertainty is the Bernoulli spread inflated by how much

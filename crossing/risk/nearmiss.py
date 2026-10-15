@@ -2,13 +2,13 @@
 
 A per-frame risk score is a signal; an *event* is what an operator acts on. This module
 stitches the frame-by-frame interactions for each entity pair into contiguous episodes and
-decides which are genuine near-misses — not merely "close", but a real conflict with
+decides which are genuine near-misses, not merely "close", but a real conflict with
 closing speed and a small realised miss distance, corroborated where possible by an
 **evasive signature** (hard braking or a pedestrian's lateral jerk-away).
 
 For every event it also computes the **early-warning time**: how many seconds before the
-moment of closest approach the system first raised a HIGH alert. That lead time — "danger
-flagged 2.7 s before the near-miss" — is the metric that actually matters for prevention.
+moment of closest approach the system first raised a HIGH alert. That lead time, "danger
+flagged 2.7 s before the near-miss", is the metric that actually matters for prevention.
 """
 from __future__ import annotations
 
@@ -81,7 +81,7 @@ class NearMissDetector:
 
         # The near-miss LABEL uses the *realised* closest separation actually observed
         # (min centre-to-centre distance), which is robust. Per-frame `it.dcpa` is a
-        # *prediction* of future closest approach — great for early warning, but taking its
+        # *prediction* of future closest approach: great for early warning, but taking its
         # min over a long episode is noise-biased toward zero, so we do not label with it.
         realized_min = min(it.distance for it in ep)
         min_dcpa = realized_min
@@ -93,7 +93,7 @@ class NearMissDetector:
         coa = min(ep, key=lambda it: it.distance)
 
         # conflict eligibility: a near-miss requires the VRU to actually be in / entering
-        # the roadway during the episode — a pedestrian safely on the sidewalk that a car
+        # the roadway during the episode: a pedestrian safely on the sidewalk that a car
         # merely drives past is NOT a near-miss, however small the centre-to-centre gap.
         in_conflict = False
         for it in ep:
@@ -156,7 +156,7 @@ class NearMissDetector:
                     veh_decel = min(veh_decel, -RISK.evasive_decel)
             if ped is not None:
                 # lateral acceleration = accel component perpendicular to the ped's heading
-                # (m/s^2) — a genuine swerve/jump-away, not filter jitter (jerk).
+                # (m/s^2): a genuine swerve/jump-away, not filter jitter (jerk).
                 nx, ny = -math.sin(ped.heading), math.cos(ped.heading)
                 lat = abs(ped.acceleration.x * nx + ped.acceleration.y * ny)
                 ped_lat = max(ped_lat, lat)

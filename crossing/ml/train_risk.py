@@ -4,7 +4,7 @@ Produces the central research result: *does a learned interaction model beat eng
 TTC-based scoring at predicting near-misses before they happen?* Trains a gradient-boosted
 classifier (xgboost/lightgbm if importable, else scikit-learn ``HistGradientBoosting``),
 isotonically calibrates it on a held-out validation split, and reports precision / recall /
-F1 / AUROC / AUPRC / ECE for every baseline and the learned model — all on **unseen test
+F1 / AUROC / AUPRC / ECE for every baseline and the learned model, all on **unseen test
 scenes**.
 """
 from __future__ import annotations

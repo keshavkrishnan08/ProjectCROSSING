@@ -1,4 +1,4 @@
-"""CROSSING — a real-time pedestrian-vehicle safety intelligence platform.
+"""CROSSING, a real-time pedestrian-vehicle safety intelligence platform.
 
     Observe -> Understand -> Predict -> Act
 

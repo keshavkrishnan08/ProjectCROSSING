@@ -1,16 +1,16 @@
-"""Conflict-geometry primitives — the physics of a near-miss.
+"""Conflict-geometry primitives, the physics of a near-miss.
 
 A single number like TTC is not enough: a person and a car 5 m apart can have a tiny TTC
 yet be perfectly safe if they are moving apart. CROSSING therefore computes a *family* of
 complementary surrogate-safety measures, all in ground metres/seconds, from the two
 actors' positions, velocities and footprints:
 
-* **closing_speed** — rate at which the gap is shrinking (m/s; +ve = approaching).
-* **TTC** — time until their footprints touch on the current headings (∞ if they miss).
-* **DCPA / TCPA** — distance and time at the closest point of approach (the miss distance).
-* **PET** — post-encroachment time: the gap between one leaving the crossing point and the
+* **closing_speed** rate at which the gap is shrinking (m/s; +ve = approaching).
+* **TTC** time until their footprints touch on the current headings (∞ if they miss).
+* **DCPA / TCPA** distance and time at the closest point of approach (the miss distance).
+* **PET** post-encroachment time: the gap between one leaving the crossing point and the
   other arriving (∞ if their straight-line paths do not cross).
-* **path_conflict** — 0..1 overlap of the two predicted corridors.
+* **path_conflict** 0..1 overlap of the two predicted corridors.
 
 Every function is closed-form and unit-tested (``tests/test_metrics.py``).
 """

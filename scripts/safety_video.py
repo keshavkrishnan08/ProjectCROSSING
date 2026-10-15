@@ -7,7 +7,7 @@ vehicle's speed and closing rate, then paint the box by that risk (green = safe,
 danger) with a live percentage. Vehicles are drawn in one neutral colour. Two colours do
 the work: a safe->danger gradient for people, one tone for vehicles.
 
-Everything is the model's own output on real footage — the detections are YOLOv3, the
+Everything is the model's own output on real footage, the detections are YOLOv3, the
 velocities come from the tracker's Kalman filter, and the hit-probability is computed from
 the depth-aware image geometry frame by frame.
 """

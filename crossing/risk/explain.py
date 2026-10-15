@@ -1,4 +1,4 @@
-"""Explaining a risk score — *why* was this interaction dangerous?
+"""Explaining a risk score, *why* was this interaction dangerous?
 
 A bare "risk = 91" is not actionable. CROSSING decomposes every score into the factors that
 drove it (the :class:`PhysicsRisk` contributions), ranks them, renders them as shares, and
@@ -39,7 +39,7 @@ def permutation_attribution(learned, features: dict, n: int = 20, seed: int = 0)
     """Model-agnostic attribution for the learned risk model.
 
     Perturbs each feature toward its neutral value and measures the drop in predicted
-    probability — a fast, local Shapley-flavoured importance for the explanation panel.
+    probability, a fast, local Shapley-flavoured importance for the explanation panel.
     """
     rng = np.random.default_rng(seed)
     base = learned.proba(features)

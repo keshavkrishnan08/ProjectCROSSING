@@ -1,15 +1,15 @@
-"""Entity–event knowledge graph and city-scale aggregation.
+"""Entity-event knowledge graph and city-scale aggregation.
 
 Beyond individual frames, CROSSING represents a scene the way an intelligence platform
 does: real-world **entities** (people, vehicles, infrastructure), the **events** they
-produce, and the **relationships** between them —
+produce, and the **relationships** between them,
 
     PERSON_17 --participates_in--> INTERACTION_1821 --involves--> VEHICLE_08
     INTERACTION_1821 --occurs_at--> "E crosswalk" --produces--> NEAR_MISS_918
 
 :func:`build_event_graph` materialises that graph (NetworkX) for one recording.
 :class:`CityAnalyzer` rolls many recordings up into a spatial risk map, ranked hotspots,
-and systemic patterns (which configurations predict danger) — the "where is the environment
+and systemic patterns (which configurations predict danger), the "where is the environment
 systematically unsafe?" view.
 """
 from __future__ import annotations

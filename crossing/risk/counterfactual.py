@@ -1,10 +1,10 @@
-"""Counterfactual simulation — decision support, not just description.
+"""Counterfactual simulation, decision support, not just description.
 
 Given a detected event, ask: *what if the vehicle had been 5 mph slower?* or *what if the
 pedestrian had waited one second?* CROSSING answers by replaying the two actors' **actual
 recorded trajectories** under a modified control and recomputing the realised miss distance
 and risk. Slowing the vehicle rescales how far along its own path it has travelled at each
-instant; delaying the pedestrian time-shifts their real path. Nothing is invented — we
+instant; delaying the pedestrian time-shifts their real path. Nothing is invented, we
 reuse the trajectories the scene actually produced.
 
 This is explicitly a *model simulation*: it estimates how the conflict geometry would have
@@ -69,7 +69,7 @@ def _min_geometry(veh_pos, ped_pos, times, radius):
         "veh_speed": float(np.linalg.norm(vv)),
     }
     # physics risk here is geometry-driven (no hardcoded on-road boost) so it *responds*
-    # to the counterfactual — the caller anchors the baseline to the event's real risk.
+    # to the counterfactual: the caller anchors the baseline to the event's real risk.
     risk, _ = PhysicsRisk().score(feats)
     return dmin, (None if math.isinf(ttc) else ttc), risk
 

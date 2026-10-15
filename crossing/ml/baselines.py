@@ -3,11 +3,11 @@
 A learned model only earns its keep if it beats sensible baselines. CROSSING benchmarks
 five, each producing a risk score in [0,1] from an interaction's features:
 
-1. **distance**      — closer = riskier (the crudest surrogate).
-2. **ttc**           — inverse time-to-collision threshold.
-3. **ttc+motion**    — TTC combined with closing speed.
-4. **physics**       — the interpretable logistic fusion (:class:`PhysicsRisk`).
-5. **learned**       — the calibrated gradient-boosted model.
+1. **distance**      closer = riskier (the crudest surrogate).
+2. **ttc**           inverse time-to-collision threshold.
+3. **ttc+motion**    TTC combined with closing speed.
+4. **physics**       the interpretable logistic fusion (:class:`PhysicsRisk`).
+5. **learned**       the calibrated gradient-boosted model.
 
 The evaluation reports precision / recall / F1 / AUROC / AUPRC for every one of these.
 """

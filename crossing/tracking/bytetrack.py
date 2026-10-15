@@ -1,14 +1,14 @@
 """A ByteTrack-style multi-object tracker.
 
 Detection turns a frame into boxes; tracking turns a *stream* of boxes into **persistent
-identities** — PERSON_17 from t=0 to t=401, even across the moment a car briefly hides
+identities** PERSON_17 from t=0 to t=401, even across the moment a car briefly hides
 them. That persistence is what makes trajectories, intention ramps, and interaction
 histories possible.
 
 Implements the essential ideas of ByteTrack (Zhang et al., 2022):
 
 * a per-track :class:`BBoxKalman` motion model;
-* **two-stage association** — match high-confidence detections first, then recover
+* **two-stage association** match high-confidence detections first, then recover
   low-confidence ones against still-unmatched tracks (this is what keeps IDs alive through
   partial occlusion, where a real detector's score dips rather than vanishes);
 * IoU association fused with a Mahalanobis motion gate;
@@ -138,7 +138,7 @@ class ByteTracker:
         remaining_tracks = [pool[i] for i in ut1]
 
         # --- stage 2: low-score dets vs still-unmatched *active* tracks (occlusion recovery).
-        # Following ByteTrack, lost tracks are NOT re-associated here — a low-confidence box
+        # Following ByteTrack, lost tracks are NOT re-associated here, a low-confidence box
         # is too weak to revive a long-gone identity, and doing so both over-trusts noise and
         # (since update() resets time_since_update) would leave un-cullable zombie tracks.
         stage2_pool = [t for t in remaining_tracks if t.state != "lost"]

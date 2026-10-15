@@ -2,10 +2,10 @@
 
 Two are provided:
 
-* :class:`BBoxKalman` — the classic SORT/ByteTrack 8-state constant-velocity filter on
+* :class:`BBoxKalman`: the classic SORT/ByteTrack 8-state constant-velocity filter on
   ``[cx, cy, a, h]`` (centre, aspect ratio, height) used by the tracker to smooth boxes
   and gate associations with Mahalanobis distance.
-* :class:`GroundKalman` — a 6-state constant-acceleration filter on ``[x, y, vx, vy, ax,
+* :class:`GroundKalman`: a 6-state constant-acceleration filter on ``[x, y, vx, vy, ax,
   ay]`` in ground metres, used by the world model to produce stable velocity /
   acceleration / heading / jerk from noisy projected foot points.
 

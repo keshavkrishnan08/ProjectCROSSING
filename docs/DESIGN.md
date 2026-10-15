@@ -1,4 +1,4 @@
-# CROSSING — design overview
+# CROSSING: design overview
 
 **Observe → Understand → Predict → Act.** CROSSING turns street video into a
 continuously-updated model of every person, vehicle, interaction, and emerging danger.

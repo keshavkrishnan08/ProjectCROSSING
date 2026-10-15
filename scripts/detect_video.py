@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Run REAL object detection (YOLOv3, ONNX) on a REAL video and draw the boxes.
 
-No torch / ultralytics required — uses onnxruntime + opencv, both of which install on
+No torch / ultralytics required, uses onnxruntime + opencv, both of which install on
 Python 3.14. Produces a boxed .mp4 and (optionally) a per-frame detection JSON so a web
 page can overlay the boxes live.
 
 Preprocessing note: the ONNX Model-Zoo YOLOv3 expects a plain 416x416 resize (it undoes
-the aspect distortion internally using the ``image_shape`` input) — NOT a letterbox.
+the aspect distortion internally using the ``image_shape`` input), NOT a letterbox.
 """
 from __future__ import annotations
 
