@@ -1,4 +1,4 @@
-# CROSSING — core runtime (all confirmed working on Python 3.11–3.14)
+# CROSSING: core runtime (all confirmed working on Python 3.11 to 3.14)
 numpy>=1.26
 scipy>=1.11
 pandas>=2.1

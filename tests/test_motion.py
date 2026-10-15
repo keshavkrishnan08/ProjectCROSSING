@@ -6,7 +6,7 @@ stationary vehicle cannot leak through.
 """
 from __future__ import annotations
 
-from scripts.safety_video import hit_probability
+from crossing.risk.hit import hit_probability
 
 
 def _ped():
